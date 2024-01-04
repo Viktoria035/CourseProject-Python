@@ -13,7 +13,7 @@ class Category(BaseModel):
     category_name = models.CharField(max_length=100)
 
     def __str__(self) -> str:
-        return self.categoty_name
+        return self.category_name
 
 
 class Question(BaseModel):
@@ -23,7 +23,16 @@ class Question(BaseModel):
 
     def __str__(self) -> str:
         return self.question
-
+    
+    def get_answers(self):
+        answer_objs = Answer.objects.filter(question=self)
+        data = []
+        for answer_obj in answer_objs:
+            data.append({
+                'answer':answer_obj.answer,
+                'is_correct':answer_obj.is_correct
+            })
+        return data
 
 class Answer(BaseModel):
     question = models.ForeignKey(Question, related_name='question_answer', on_delete=models.CASCADE)
