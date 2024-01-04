@@ -19,7 +19,7 @@ class Category(BaseModel):
 class Question(BaseModel):
     category = models.ForeignKey(Category, related_name='category', on_delete=models.CASCADE)
     question = models.CharField(max_length=500)
-    marks = models.IntegerField(default=1)
+    marks = models.IntegerField(default=5)
 
     def __str__(self) -> str:
         return self.question
