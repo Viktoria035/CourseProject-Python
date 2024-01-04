@@ -22,5 +22,5 @@ def get_quiz(request):
         return JsonResponse(payload)
     except Exception as e:
         print(e)
-        return HttpResponse("Something went wrong!")
+    return HttpResponse("Something went wrong!")
     
