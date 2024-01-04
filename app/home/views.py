@@ -10,7 +10,7 @@ def get_quiz(request):
     try:
         question_objs = list(Question.objects.all())
         data = []
-        random.shuffle((question_objs))
+        random.shuffle(question_objs)
 
         for question_obj in question_objs:
             data.append({
