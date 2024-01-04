@@ -1,4 +1,4 @@
-from django.http import HttpResponse, JsonResponse
+from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
 from .models import *
 import random
@@ -14,12 +14,13 @@ def get_quiz(request):
 
         for question_obj in question_objs:
             data.append({
-                "category":question_obj.category.category_name,
-                "question":question_obj.question,
-                "answer":question_obj.marks
+                'category' : question_obj.category.category_name,
+                'question' : question_obj.question,
+                'marks' : question_obj.marks,
+                'answers' : question_obj.get_answers()
             })
         
-        payload = {'status':True, 'data':data}
+        payload = {'status' : True, 'data' : data}
 
         return JsonResponse(payload)
     except Exception as e:
