@@ -10,7 +10,7 @@ class BaseModel(models.Model):
         abstract = True
 
 class Category(BaseModel):
-    categoty_name = models.CharField(max_length=100)
+    category_name = models.CharField(max_length=100)
 
     def __str__(self) -> str:
         return self.categoty_name

@@ -8,11 +8,13 @@ def response(request):
 
 def get_quiz(request):
     try:
-        question_objs = Question.objects.all()
+        question_objs = list(Question.objects.all())
         data = []
+        random.shuffle((question_objs))
+
         for question_obj in question_objs:
             data.append({
-                "category":question_obj.category.categoty_name,
+                "category":question_obj.category.category_name,
                 "question":question_obj.question,
                 "answer":question_obj.marks
             })
