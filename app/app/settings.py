@@ -40,7 +40,7 @@ INSTALLED_APPS = [
 
     # my apps
     # 'home',
-    'gui',
+    'gui'
 ]
 
 MIDDLEWARE = [
