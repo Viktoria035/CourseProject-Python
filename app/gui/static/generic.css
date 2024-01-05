@@ -16,3 +16,7 @@ body {
 .float-right {
     float: right;
 }
+
+.errorlist {
+    color: red;
+}
