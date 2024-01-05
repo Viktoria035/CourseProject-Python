@@ -1,3 +1,18 @@
 body {
-    background-color: #dfc86b;
+    background-color: #FFF8DC;
+}
+
+#content {
+    width: 600px;
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #EFEFEF;
+    border: 1px solid black;
+    border-radius: 10px;
+    box-shadow: 0px 0px 5px 0px black;
+}
+
+.float-right {
+    float: right;
 }
