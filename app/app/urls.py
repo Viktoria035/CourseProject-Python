@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    path("", include("gui.urls"))
     path("home/", include("home.urls")),
-    path("polls/", include("polls.urls")),# should delete
     path('admin/', admin.site.urls),
 ]
