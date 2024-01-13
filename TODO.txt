@@ -1,0 +1,5 @@
+TODO:
+    Fix the /home/ page
+    "Press to reset" button
+    "Let's start" button
+    "Leaderbord"
