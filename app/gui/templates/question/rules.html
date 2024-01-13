@@ -1,0 +1,28 @@
+{% extends "question/base.html" %} {% block content %} 
+{% include "question/header.html" %}
+<div class="rules">
+  <h1>Rules</h1>
+  <ul>
+    <li>
+      The decision of the quiz-master will be final and will not be subjected to
+      any change.
+    </li>
+    <li>
+      The participants shall not be allowed to use mobile or other electronic
+      instruments.
+    </li>
+    <li>
+      The questions shall be in the form of multiple choice, True / False
+      statement, Specific answer question etc.
+    </li>
+    <li>
+      Audience/Supporters shall not give any hints or clues to the competitors.
+    </li>
+  </ul>
+  <a href="{% url 'detail' %}" class="button">Start Quiz</a>
+</div>
+
+<script type='text/javascript'>
+  localStorage.setItem('count', 120)
+</script>
+{% endblock %}

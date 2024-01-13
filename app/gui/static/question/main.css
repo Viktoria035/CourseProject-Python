@@ -1,0 +1,469 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 62.5%;
+  position: relative;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  width: calc(100% - (clamp(1px, 6vw, 77px) * 2));
+  margin: auto;
+}
+
+header {
+  padding-top: 3.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header img {
+  width: 13rem;
+}
+
+header nav ul {
+  display: flex;
+  width: 50rem;
+  list-style: none;
+  justify-content: space-between;
+  font-size: 1.6rem;
+  font-size: clamp(1rem, 1.4vw, 1.5rem);
+}
+
+a {
+  text-decoration: none;
+  color: #f68b1e;
+  font-weight: 500;
+}
+
+a:hover {
+  color: #7c440c;
+}
+
+main {
+  display: flex;
+  margin: 4rem 0;
+  gap: 6rem;
+}
+
+main .dashboard {
+  width: 50%;
+  display: flex;
+  align-items: center;
+}
+
+main .illustration {
+  width: 50%;
+  height: min(33vw, 44.743rem);
+  background-image: url("../question/images/quiz-illustration.svg");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+table {
+  background-color: #2f2e41;
+  color: #ffffff;
+  border-radius: 1.2rem;
+  font-size: clamp(1rem, 1.4vw, 1.5rem);
+  padding: 1.5rem;
+}
+
+table td,
+th {
+  padding: 1rem;
+  padding-right: 5rem;
+}
+
+table tr td:first-child {
+  font-weight: 500;
+  color: #f68b1e;
+}
+
+.rules {
+  margin: 5rem 0;
+  text-align: center;
+}
+
+.rules h1 {
+  text-align: center;
+  color: #2f2e41;
+  font-weight: 600;
+  font-size: 3rem;
+  margin-bottom: 4rem;
+}
+
+.rules ul {
+  margin-bottom: 4rem;
+  text-align: left;
+  list-style-position: inside;
+}
+
+.rules ul li {
+  font-size: 1.3rem;
+  line-height: 2.5;
+}
+
+.rules ul li::marker {
+  color: #f68b1e;
+}
+
+.leaderboard {
+  margin: 6rem 0;
+  overflow: auto;
+}
+
+.leaderboard table {
+  width: 100%;
+}
+
+.leaderboard table td,
+th {
+  border: 0.1rem solid rgb(75, 75, 134);
+}
+
+.details {
+  margin: 6rem 0;
+  position: relative;
+}
+
+.details .ques {
+  display: flex;
+  justify-content: space-between;
+  height: 6rem;
+}
+
+.ques p#timer {
+  font-size: 2.1rem;
+  font-family: sans-serif;
+  color: rgb(85, 77, 77);
+}
+
+form {
+  text-align: center;
+}
+
+form .ques-label{
+  width: 100%;
+  position: relative;
+}
+
+form .ques-label .status{
+  position: absolute;
+  width: 2rem;
+  right: 1.3rem;
+  top: 1.7rem;
+}
+
+form input {
+  display: block;
+  width: 100%;
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 0.1rem solid #f68b1e;
+  margin-bottom: 2rem;
+}
+
+form input::placeholder {
+  font-family: "Montserrat", sans-serif;
+}
+
+form input:focus,
+form button:focus,
+.nav-btn:focus,
+a.button:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.3rem rgba(216, 142, 69, 0.56);
+}
+
+form button,
+a.button {
+  padding: 1.5rem 3.4rem;
+  border-radius: 0.8rem;
+  border: none;
+  background-color: #2f2e41;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.4rem;
+  outline: 0;
+}
+
+form button:active,
+.details .likes button#like-btn:active {
+  transform: scale(0.95);
+}
+
+.cred {
+  padding: 5rem 0;
+}
+
+.cred h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 4rem;
+  color: #2f2e41;
+}
+
+.cred form {
+  margin: auto;
+  width: 60rem;
+}
+
+.muted {
+  font-size: 1.5rem;
+  margin-top: 4rem;
+  text-align: center;
+}
+
+.success,
+.error,
+.info {
+  width: 100%;
+  position: absolute;
+  top: -1.2rem;
+  left: 0;
+  font-size: 1.3rem;
+  font-weight: 500;
+  padding: 0.6rem 0;
+  text-align: center;
+  animation: comefromtop 0.3s forwards ease, gototop 0.5s forwards ease 2s;
+}
+
+@keyframes comefromtop {
+  100% {
+    top: 0;
+  }
+}
+
+@keyframes gototop {
+  100% {
+    top: -4rem;
+  }
+}
+
+.success {
+  background-color: #218838;
+  color: #ffffff;
+}
+
+.error {
+  background-color: #bd2130;
+  color: #ffffff;
+}
+
+.info {
+  background-color: #525158;
+  color: #ffffff;
+}
+
+.nav-btn {
+  padding: 0 2rem;
+  font-size: 2.4rem;
+  display: none;
+  background-color: #f68b1e;
+  border: 0.1rem solid #c4670b;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.mobile {
+  position: absolute;
+  background-color: #2f2e41bb;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 30rem;
+  padding-top: 7rem;
+  display: none;
+}
+
+.mobile ul {
+  flex-direction: column;
+  width: 100%;
+}
+
+.mobile ul li {
+  padding: 2.5rem;
+  padding-left: 4rem;
+}
+
+.mobile ul li:hover {
+  background-color: #1c1b2c;
+}
+
+.nav-btn.visible,
+.mobile.visible {
+  display: initial;
+}
+
+.nav-btn.abs {
+  position: absolute;
+  top: 2rem;
+  right: 1rem;
+}
+
+@media (max-width: 991px) {
+  header img {
+    width: 10rem;
+  }
+  main {
+    flex-direction: column;
+  }
+  main .illustration,
+  main .dashboard {
+    width: 100%;
+  }
+  main .dashboard {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 340px) {
+  table td {
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 694px) {
+  .cred form {
+    width: 100%;
+  }
+}
+
+@media (max-width: 342px) {
+  .mobile {
+    width: 100%;
+  }
+}
+
+@media (max-width: 352px) {
+  .details .ques {
+    height: 12rem;
+    flex-direction: column;
+    justify-content: space-evenly;
+  }
+  .ques p#timer {
+    font-size: 1.5rem;
+  }
+  .ques p#timer::before {
+    content: "Time remaining: ";
+    color: green;
+  }
+}
+
+@media (max-width: 275px) {
+  .details form {
+    text-align: left;
+  }
+}
+
+/* quiz-end-page */
+
+.end-page {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.end-page .bottom-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  bottom: 3rem;
+  transform: scale(0);
+  animation: animate-p 1s forwards linear 5s;
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 4rem;
+  font-family: "Orbitron", sans-serif;
+}
+
+.end-page .bottom-text a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+@keyframes animate-p {
+  100% {
+    transform: scale(1);
+  }
+}
+
+.circle {
+  width: 240px;
+  height: 240px;
+  background-color: #ec4888;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: zoom 0.7s forwards ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: content-box;
+  border: 150rem solid #392354;
+}
+
+.circle .score {
+  font-size: 6rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+@keyframes zoom {
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+/* like btn */
+
+.details .likes {
+  position: absolute;
+  right: 0;
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  width: 4.3rem;
+  justify-content: space-between;
+}
+
+.details .likes span#like-count {
+  font-size: 1.5rem;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.details .likes button#like-btn {
+  border: 0;
+  cursor: pointer;
+  background: transparent;
+}
+
+.details .likes button#like-btn:focus {
+  outline: 0;
+}
+
+.hello {
+  font-size: 4vh;
+}

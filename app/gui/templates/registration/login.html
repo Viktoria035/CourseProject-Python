@@ -1,12 +1,29 @@
-{% extends "base.html" %}
-
-{% block content %}
-  Please log in...
-  <form method="post">
+{% extends "question/base.html" %} {% block content %}
+<div class="cred">
+  <h2>Login</h2>
+  <form method="POST"}">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
+    <input
+      type="text"
+      name="username"
+      placeholder="Username"
+      maxlength="15"
+      autocomplete="off"
+      required
+    />
+    <input
+      type="password"
+      name="password"
+      placeholder="Password"
+      minlength="8"
+      autocomplete="off"
+      required
+    />
+    <button type="submit">Log in</button>
   </form>
-  <br/><br/>
-  <a href="/register">...or sign up</a>
-{% endblock %}
+  <p class="muted">
+    New User?<a class="ml-2" href="{%url 'register' %}"> Sign Up</a> <br>
+    Forgot password?<a class="ml-2" href="/reset/password_reset/"> Reset here</a>
+  </p>
+</div>
+{% endblock content %}

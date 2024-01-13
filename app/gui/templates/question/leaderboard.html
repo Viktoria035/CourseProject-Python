@@ -1,0 +1,19 @@
+{% extends "question/base.html" %} {% block content %} 
+{% include "question/header.html" %}
+<div class="leaderboard">
+  <table class="card">
+    <tr>
+      <th>#</th>
+      <th>Handle</th>
+      <th>Score</th>
+    </tr>
+    {% for pr in profiles %}
+    <tr>
+      <th scope="row">{{ forloop.counter }}</th>
+      <td>{{ pr.student }}</td>
+      <td>{{ pr.score }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

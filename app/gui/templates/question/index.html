@@ -1,0 +1,35 @@
+{% extends "question/base.html" %} {% block content %}
+{% include "question/header.html" %}
+<main>
+  <div class="dashboard">
+    {% if user.is_authenticated %}
+      <table class="card">
+        <tr>
+          <td>Username</td>
+          <td>{{user}}</td>
+        </tr>
+        <tr>
+          <td>Level</td>
+          <td>{{level}}</td>
+        </tr>
+        <tr>
+          <td>Score</td>
+          <td>{{score}}</td>
+        </tr>
+        <tr>
+          <td>Rank</td>
+          <td>{{rank}}</td>
+        </tr>
+      </table>
+    {% else %}
+      <div class="card hello">
+        <h2>Not Logged In</h2>
+        <p>
+          You are not logged in. Please login to view your dashboard.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+  <div class="illustration"></div>
+</main>
+{% endblock %}

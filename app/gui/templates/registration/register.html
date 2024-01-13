@@ -1,12 +1,44 @@
-{% extends "base.html" %}
-
-{% block content %}
-  Please sign up...
-  <form method="post">
+{% extends "question/base.html" %} {% block content %}
+<div class="cred">
+  <h2>Sign Up</h2>
+  <form action="{% url "register" %}" method="POST">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Register</button>
+    <input
+      type="text"
+      name="username"
+      placeholder="Username"
+      maxlength="15"
+      autocomplete="off"
+      required
+    />
+    <input
+      type="email"
+      name="email"
+      placeholder="Email"
+      autocomplete="off"
+      required
+    />
+    <input
+      type="password"
+      name="password"
+      placeholder="Password"
+      minlength="8"
+      autocomplete="off"
+      required
+    />
+    <input
+      type="password"
+      name="password-c"
+      placeholder="Confirm password"
+      minlength="8"
+      autocomplete="off"
+      required
+    />
+    <button class="btn default" type="submit">Sign Up</button>
   </form>
-  <br/><br/>
-  <a href="/login">...or log in</a>
-{% endblock %}
+  <p class="muted">
+    Have an account?<a class="ml-2" href="{%url 'login' %}"> Login</a>
+  </p>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Quiz Portal</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Orbitron:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href={% static 'question/main.css' %}>
+  </head>
+  <body>
+    {% block content %} {% endblock content %}
+    <div class="msgs">
+      {% for message in messages %}
+        <p class= {{message.tags}}>{{message}}</p>
+      {% endfor %}
+    </div>
+    <script src="{% static 'question/scripts.js' %}"></script>
+  </body>
+</html>
