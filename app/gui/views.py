@@ -7,14 +7,14 @@ from app.functions import calculate_leaderboard_rank
 # @login_required(login_url='/login')
 def index(request):
     """Welcome page."""
-
-    context = {
-        'username': request.user.username,
-        'level': request.user.player.level,
-        'score': request.user.player.score,
-        'rank': request.user.player.rank,
-
-    }
+    context = {}
+    if request.user.is_authenticated:
+        context = {
+            'username': request.user.username,
+            'level': request.user.player.level,
+            'score': request.user.player.score,
+            'rank': request.user.player.rank,
+        }
     return render(request, 'question/index.html', context)
 
 def register(request):
