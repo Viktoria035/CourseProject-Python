@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres import fields
 from django.utils.translation import ugettext as _
 from django.core.validators import MaxValueValidator
-
+import re
 # Create your models here.
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -38,34 +38,60 @@ class Category(models.Model):
     def __str__(self):
         return self.category
     
-
+#not sure for this class what we are doing here ;()
 class Quizz(models.Model):
 
-    title = models.CharField(verbose_name=_("Title"), max_length=100, blank=False)
+    title = models.CharField(verbose_name=_("Title"), 
+                             max_length=100, blank=False)
 
-    description = models.TextField(verbose_name=_("Description"), blank=True, help_text=_("A brief description of the quiz"))
+    description = models.TextField(verbose_name=_("Description"), 
+                                   blank=True,
+                                     help_text=_("A brief description of the quiz"))
 
-    url = models.SlugField(verbose_name=_("user friendly url"), max_length=60, blank=False, help_text=_("A user friendly url"))
+    url = models.SlugField(verbose_name=_("user friendly url"),
+                            max_length=60, blank=False,
+                              help_text=_("A user friendly url"))
 
-    category = models.ForeignKey(Category, null=True, blank=True, verbose_name=_("Category"), on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, null=True, 
+                                 blank=True, verbose_name=_("Category"), 
+                                 on_delete=models.CASCADE)
     
-    random_order = models.BooleanField(verbose_name=_("Random Order"), blank=False, default=False, help_text=_("Display the questions in a random order or as they are set?"))
+    random_order = models.BooleanField(verbose_name=_("Random Order"), 
+                                       blank=False, default=False, 
+                                       help_text=_("Display the questions in a random order or as they are set?"))
 
-    max_questions = models.PositiveIntegerField(verbose_name=_("Max Questions"), blank=True, null=True, help_text=_("Number of questions to be answered on each attempt"))
+    max_questions = models.PositiveIntegerField(verbose_name=_("Max Questions"), 
+                                                blank=True, null=True, 
+                                                help_text=_("Number of questions to be answered on each attempt"))
 
-    answers_at_end = models.BooleanField(verbose_name=_("Answers at end"), blank=False, default=False, help_text=_("Display the correct answers when the quiz is finished?"))
+    answers_at_end = models.BooleanField(verbose_name=_("Answers at end"), 
+                                         blank=False, default=False, 
+                                         help_text=_("Display the correct answers when the quiz is finished?"))
 
-    exam_paper = models.BooleanField(verbose_name=_("Exam Paper"), blank=False, default=False, help_text=_("If yes, the quiz is presented in exam mode - no correct answers until the end"))
+    exam_paper = models.BooleanField(verbose_name=_("Exam Paper"), 
+                                     blank=False, default=False, 
+                                     help_text=_("If yes, the quiz is presented in exam mode - no correct answers until the end"))
 
-    single_attempt = models.BooleanField(verbose_name=_("Single Attempt"), blank=False, default=False, help_text=_("If yes, only one attempt is permitted"))
+    single_attempt = models.BooleanField(verbose_name=_("Single Attempt"), 
+                                         blank=False, default=False, 
+                                         help_text=_("If yes, only one attempt is permitted"))
 
-    pass_mark = models.SmallIntegerField(verbose_name=_("Pass Mark"), blank=True, default=0, help_text=_("Percentage required to pass. Leave empty if no pass mark is required"), validators=[MaxValueValidator(100)])
+    pass_mark = models.SmallIntegerField(verbose_name=_("Pass Mark"), 
+                                         blank=True, default=0, 
+                                         help_text=_("Percentage required to pass. Leave empty if no pass mark is required"), 
+                                         validators=[MaxValueValidator(100)])
 
-    success_text = models.TextField(verbose_name=_("Success Text"), blank=True, help_text=_("Displayed if user passes. HTML and Textile valid."))
+    success_text = models.TextField(verbose_name=_("Success Text"), 
+                                    blank=True, 
+                                    help_text=_("Displayed if user passes. HTML and Textile valid."))
 
-    fail_text = models.TextField(verbose_name=_("Fail Text"), blank=True, help_text=_("Displayed if user fails. HTML and Textile valid."))
+    fail_text = models.TextField(verbose_name=_("Fail Text"), 
+                                 blank=True, 
+                                 help_text=_("Displayed if user fails. HTML and Textile valid."))
 
-    draft = models.BooleanField(verbose_name=_("Draft"), blank=True, default=False, help_text=_("If yes, the quiz is not displayed in the quiz list and can only be taken by users who can edit quizzes."))
+    draft = models.BooleanField(verbose_name=_("Draft"), 
+                                blank=True, default=False, 
+                                help_text=_("If yes, the quiz is not displayed in the quiz list and can only be taken by users who can edit quizzes."))
 
     def save(self, force_insert=False, force_update=False, *args, **kwargs):
         self.url = re.sub('\s+', '-', self.url).lower()
@@ -102,6 +128,7 @@ class Quizz(models.Model):
     
     def anon_q_data(self):
         return str(self.id) + "_data"
+
 
 class Question(models.Model):
     question = models.CharField(max_length=500)
