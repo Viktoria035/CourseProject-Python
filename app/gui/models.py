@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres import fields
 
 # Create your models here.
 class Player(models.Model):
@@ -22,10 +23,34 @@ class Question(models.Model):
         return self.question
 
 
-class Choice(models.Model):
+class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice = models.CharField(max_length=500)
-    is_correct = models.BooleanField(default=False)
+    correct_answer = models.CharField(max_length=500)
+    #is_correct = models.BooleanField(default=False)
+
+
+    class Meta:
+        abstract = True
 
     def __str__(self):
-        return self.choice
+        return self.correct_answer
+    
+    def is_correct(self, user_answer):
+        return self.correct_answer == user_answer
+    
+#check
+class FreeTextAnswer(Answer):
+    case_sensitive = models.BooleanField(default=False)
+
+    def is_correct(self, user_answer):
+        if self.case_sensitive:
+            return self.correct_answer == user_answer
+        else:
+            return self.correct_answer.lower() == user_answer.lower()
+        
+#check
+class MultipleChoiceAnswer(Answer):
+    choices = fields.ArrayField(models.CharField(max_length=200, blank=True))
+
+    def __str__(self) -> str:
+        return f"{self.correct_answer} from {self.choices}"
