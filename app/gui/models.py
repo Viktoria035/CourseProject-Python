@@ -32,7 +32,7 @@ class CategoryManager(models.Manager):
 
 class Category(models.Model):
 
-    category = models.CharField(verbose_name=_("Category"), max_length=250, blank=True, unique=True, null=True)
+    category = models.CharField(verbose_name=_("Category"), max_length=100, blank=True, unique=True, null=True)
 
     objects = CategoryManager()
 
