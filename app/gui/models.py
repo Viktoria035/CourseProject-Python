@@ -58,10 +58,6 @@ class Quizz(models.Model):
                                   max_length=6, 
                                   choices=DIFF_CHOICES, default='easy')
 
-    url = models.SlugField(verbose_name=_("user friendly url"),
-                            max_length=60, blank=False,
-                              help_text=_("A user friendly url"))
-
     category = models.ForeignKey(Category, null=True, 
                                  blank=True, verbose_name=_("Category"), 
                                  on_delete=models.CASCADE)
@@ -99,19 +95,7 @@ class Quizz(models.Model):
                                 blank=True, default=False, 
                                 help_text=_("If yes, the quiz is not displayed in the quiz list and can only be taken by users who can edit quizzes."))
 
-    def save(self, force_insert=False, force_update=False, *args, **kwargs):
-        self.url = re.sub('\s+', '-', self.url).lower()
 
-        self.url = ''.join(letter for letter in self.url if letter.isalnum() or letter == '-')
-
-        if self.single_attempt is True:
-            self.exam_paper = True
-
-        if self.pass_mark > 100:
-            raise ValueError("Pass mark cannot be greater than 100")
-        
-        super(Quizz, self).save(force_insert, force_update, *args, **kwargs)
-    
     class Meta:
         verbose_name = _("Quiz")
         verbose_name_plural = _("Quizzes")

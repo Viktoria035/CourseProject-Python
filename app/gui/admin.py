@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
-from gui.models import Player, Result, Question, Quizz, Answer
+from gui.models import Player, Result, Question, Quizz, Answer, Category
 
 
 class PlayerInLine(admin.StackedInline):
@@ -28,3 +28,4 @@ admin.site.register(Answer)
 
 admin.site.register(Quizz)
 admin.site.register(Result)
+admin.site.register(Category)
