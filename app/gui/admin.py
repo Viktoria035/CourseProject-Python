@@ -5,12 +5,12 @@ from django.contrib.auth.models import User
 from gui.models import Player, Result, Question, Quizz, Answer, Category
 
 
-class PlayerInLine(admin.StackedInline):
-    model = Player
+# class PlayerInLine(admin.StackedInline):
+#     model = Player
 
 
-class UserAdmin(BaseUserAdmin):
-    inlines = [PlayerInLine]
+# class UserAdmin(BaseUserAdmin):
+#     inlines = [PlayerInLine]
 
 
 class AnswerInLine(admin.TabularInline):
@@ -20,8 +20,10 @@ class AnswerInLine(admin.TabularInline):
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [AnswerInLine]
 
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+# admin.site.unregister(User)
+# admin.site.register(User, UserAdmin)
+
+admin.site.register(Player)
 
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Answer)

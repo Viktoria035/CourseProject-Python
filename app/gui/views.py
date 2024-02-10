@@ -4,12 +4,14 @@ from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
-from .forms import RegisterUserForm
+#from .forms import RegisterUserForm
 from app.functions import calculate_leaderboard_rank
 from .models import Player, Quizz, Category
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
-
+from django.db import IntegrityError
+from django.contrib import messages
+from django.contrib.auth.models import User
 
 # @login_required(login_url='/login')
 def index(request):
@@ -18,30 +20,50 @@ def index(request):
     if request.user.is_authenticated:
         context = {
             'username': request.user.username,
-            'level': request.user.player.level,
-            'score': request.user.player.score,
-            'rank': request.user.player.rank,
+            'level': Player.objects.get(user=request.user).level,
+            'score': Player.objects.get(user=request.user).score,
+            'rank': Player.objects.get(user=request.user).rank,
         }
     return render(request, 'question/index.html', context)
 
+# def register(request):
+#     if request.method == "POST":
+#         form = RegisterUserForm(request.POST)
+#         if form.is_valid():
+#             user = form.save()
+#             # username = form.cleaned_data.get('username')
+#             # raw_password = form.cleaned_data.get('password1')
+#             # user = authenticate(username=username, password=raw_password)
+#             login(request, user)
+#             return redirect(index)
+#     else:
+#         form = RegisterUserForm()
+
+#     context = {
+#         'form': form
+#     }
+#     return render(request, 'registration/register.html', context)
+
 def register(request):
-    if request.method == "POST":
-        form = RegisterUserForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # username = form.cleaned_data.get('username')
-            # raw_password = form.cleaned_data.get('password1')
-            # user = authenticate(username=username, password=raw_password)
-            login(request, user)
-            return redirect(index)
-    else:
-        form = RegisterUserForm()
-
-    context = {
-        'form': form
-    }
-    return render(request, 'registration/register.html', context)
-
+    if request.method == 'POST':
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        password_c = request.POST.get("password-c")
+        if (password == password_c):
+            try:
+                user = User.objects.create_user(username, email, password);
+                user.save()
+                Player(user=user).save()
+                messages.success(request, "Account created")
+                return redirect("login")
+            except IntegrityError:
+                messages.info(request, "Username taken, Try different")
+                return render(request, "registration/register.html")
+        messages.error(request, "Password doesn't match Confirm Password")
+    if request.user.is_authenticated:
+        return redirect('home')
+    return render(request, "registration/register.html")
 
 @login_required(login_url='/login')
 def rules(request):
