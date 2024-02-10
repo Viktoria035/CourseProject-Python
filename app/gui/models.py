@@ -120,7 +120,7 @@ class Quizz(models.Model):
         return f"{self.title} - {self.category} - {self.difficulty}"
 
     def get_questions(self):
-        return self.question_set.all().select_subclasses()
+        return self.question_set.all()
     
     @property
     def get_max_score(self):
@@ -136,20 +136,28 @@ class Quizz(models.Model):
         return str(self.id) + "_data"
 
 
-# class Question(models.Model):
-#     question = models.CharField(max_length=500)
-#     max_marks=models.DecimalField(default=0,decimal_places=2,max_digits=6)
-#     category = models.CharField(max_length=200)
-#     #answer = models.CharField(max_length=200)
+class Question(models.Model):
+    question = models.CharField(max_length=200)
+    quiz = models.ForeignKey(Quizz, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    # max_marks = models.DecimalField(default=0, decimal_places=2, max_digits=6)
+    # answer = models.CharField(max_length=200)
 
-#     def __str__(self):
-#         return self.question
+    def __str__(self):
+        return self.question
+    
+    def get_answers(self):
+        return self.answer_set.all() # we reverse reletionship to get all answers for a question, we can do this because we have a foreign key in the answer model
 
 
-# class Answer(models.Model):
-#     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-#     correct_answer = models.CharField(max_length=500)
-#     #is_correct = models.BooleanField(default=False)
+class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    correct_answer = models.CharField(max_length=200)
+    created = models.DateTimeField(auto_now_add=True)
+    is_correct = models.BooleanField(default=False)
+
+    def __std__(self):
+        return f"question: {self.question.question}, answer: {self.correct_answer}, is_correct: {self.is_correct}"
 
 
 #     class Meta:
@@ -161,6 +169,16 @@ class Quizz(models.Model):
 #     def is_correct(self, user_answer):
 #         return self.correct_answer == user_answer
     
+
+class Result(models.Model):
+    quiz = models.ForeignKey(Quizz, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    score = models.FloatField(default=0)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.player.user.username} - {self.quiz.title} - {self.score}"
+
 # #check
 # class FreeTextAnswer(Answer):
 #     case_sensitive = models.BooleanField(default=False)
