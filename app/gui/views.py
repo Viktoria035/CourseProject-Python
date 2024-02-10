@@ -81,10 +81,10 @@ def question(request):
 @login_required(login_url='/login')
 def leaderboard(request):
     """Leaderboard page."""
-    players = Player.objects.all().order_by('-score')
+    profiles = Player.objects.all().order_by('-score')
 
     context = {
-        'players': players,
+        'profiles': profiles,
         'auth': request.user.is_authenticated
     }
     return render(request, 'question/leaderboard.html', context=context)

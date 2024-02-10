@@ -4,13 +4,13 @@
   <table class="card">
     <tr>
       <th>#</th>
-      <th>Handle</th>
+      <th>Username</th>
       <th>Score</th>
     </tr>
     {% for pr in profiles %}
     <tr>
       <th scope="row">{{ forloop.counter }}</th>
-      <td>{{ pr.student }}</td>
+      <td>{{ pr.user }}</td>
       <td>{{ pr.score }}</td>
     </tr>
     {% endfor %}
