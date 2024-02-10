@@ -64,6 +64,14 @@ def leaderboard(request):
     return render(request, 'question/leaderboard.html', context=context)
 
 
+class QuizzListView(ListView):
+    model = Quizz
+    
+    def get_queryset(self):
+        queryset = super(QuizzListView, self).get_queryset()
+        return queryset.filter(draft=False)
+
+
 class ViewQuizListByCategory(ListView):
     model = Quizz
     template_name = 'question/quiz_category.html'

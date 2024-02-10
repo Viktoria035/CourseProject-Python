@@ -11,5 +11,6 @@ urlpatterns = [
     path('rules', views.rules, name='rules'),
     path('question', views.question, name='question'),
     path('leaderboard', views.leaderboard, name='leaderboard'),
-    
+    path('quizzes', views.QuizzListView.as_view(), name='quizzes'),
+    # path('detail', views.QuizzDetailView.as_view(), name='detail'),
 ]
