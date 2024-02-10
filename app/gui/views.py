@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from .forms import RegisterUserForm
 from app.functions import calculate_leaderboard_rank
-
+from .models import Player
 # @login_required(login_url='/login')
 def index(request):
     """Welcome page."""
@@ -48,6 +48,11 @@ def question(request):
 @login_required(login_url='/login')
 def leaderboard(request):
     """Leaderboard page."""
-
-    return render(request, 'question/leaderboard.html')
+    players = Player.objects.all().order_by('-score')
+    
+    context = {
+        'players': players,
+        'auth': request.user.is_authenticated
+    }
+    return render(request, 'question/leaderboard.html', context=context)
 
