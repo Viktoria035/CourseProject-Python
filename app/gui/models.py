@@ -4,6 +4,13 @@ from django.utils.translation import gettext as _
 from django.core.validators import MaxValueValidator
 import re
 # Create your models here.
+
+DIFF_CHOICES = (
+    ('easy', 'Easy'),
+    ('medium', 'Medium'),
+    ('hard', 'Hard'),
+)
+
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
@@ -47,6 +54,10 @@ class Quizz(models.Model):
                                    blank=True,
                                      help_text=_("A brief description of the quiz"))
 
+    difficulty = models.CharField(verbose_name=_("Difficulty"), 
+                                  max_length=6, 
+                                  choices=DIFF_CHOICES, default='easy')
+
     url = models.SlugField(verbose_name=_("user friendly url"),
                             max_length=60, blank=False,
                               help_text=_("A user friendly url"))
@@ -66,10 +77,6 @@ class Quizz(models.Model):
     answers_at_end = models.BooleanField(verbose_name=_("Answers at end"), 
                                          blank=False, default=False, 
                                          help_text=_("Display the correct answers when the quiz is finished?"))
-
-    exam_paper = models.BooleanField(verbose_name=_("Exam Paper"), 
-                                     blank=False, default=False, 
-                                     help_text=_("If yes, the quiz is presented in exam mode - no correct answers until the end"))
 
     single_attempt = models.BooleanField(verbose_name=_("Single Attempt"), 
                                          blank=False, default=False, 
@@ -110,7 +117,7 @@ class Quizz(models.Model):
         verbose_name_plural = _("Quizzes")
 
     def __str__(self):
-        return self.title
+        return f"{self.title} - {self.category} - {self.difficulty}"
 
     def get_questions(self):
         return self.question_set.all().select_subclasses()
