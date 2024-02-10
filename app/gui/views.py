@@ -3,7 +3,7 @@ from django.http import HttpRequest
 from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login
 from .forms import RegisterUserForm
 from app.functions import calculate_leaderboard_rank
 from .models import Player, Quizz, Category
@@ -29,10 +29,14 @@ def register(request):
         form = RegisterUserForm(request.POST)
         if form.is_valid():
             user = form.save()
+            # username = form.cleaned_data.get('username')
+            # raw_password = form.cleaned_data.get('password1')
+            # user = authenticate(username=username, password=raw_password)
             login(request, user)
             return redirect(index)
     else:
         form = RegisterUserForm()
+
     context = {
         'form': form
     }
@@ -66,7 +70,7 @@ def leaderboard(request):
 
 class QuizzListView(ListView):
     model = Quizz
-    
+
     def get_queryset(self):
         queryset = super(QuizzListView, self).get_queryset()
         return queryset.filter(draft=False)
