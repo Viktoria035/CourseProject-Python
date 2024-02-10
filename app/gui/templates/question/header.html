@@ -4,7 +4,7 @@
   <nav>
     <ul>
       <li><a href="{% url 'index' %}">Home</a></li>
-      <li><a href="{% url "rules" %}">Let's Start</a></li>
+      <li><a href="{% url "rules" %}">Quizzes</a></li>
       <li><a href="{% url "leaderboard" %}">Leaderboard</a></li>
       {% if user.is_authenticated %}
       <li><a href="{% url "logout" %}">Logout</a></li>

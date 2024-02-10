@@ -9,6 +9,8 @@ from app.functions import calculate_leaderboard_rank
 from .models import Player, Quizz, Category
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404
+
+
 # @login_required(login_url='/login')
 def index(request):
     """Welcome page."""
