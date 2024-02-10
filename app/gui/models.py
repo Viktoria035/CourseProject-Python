@@ -104,7 +104,7 @@ class Quizz(models.Model):
         return f"{self.title} - {self.category} - {self.difficulty}"
 
     def get_questions(self):
-        return self.question_set.all()
+        return self.question_set.all()[:self.max_questions] # we use the max_questions to limit the number of questions to be displayed
     
     @property
     def get_max_score(self):
@@ -140,7 +140,7 @@ class Answer(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     is_correct = models.BooleanField(default=False)
 
-    def __std__(self):
+    def __str__(self):
         return f"question: {self.question.question}, answer: {self.correct_answer}, is_correct: {self.is_correct}"
 
 
