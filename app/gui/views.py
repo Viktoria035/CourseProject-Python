@@ -141,7 +141,7 @@ def view_question(request, quiz_id, question_id):
 
         if answer.is_correct:
             result = Result.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
-            result.score += 1
+            result.score += answer.points
             result.save()
 
         next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()

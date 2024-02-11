@@ -135,6 +135,7 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     answer = models.CharField(max_length=200)
     created = models.DateTimeField(auto_now_add=True)
+    points = models.IntegerField(default=1)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
