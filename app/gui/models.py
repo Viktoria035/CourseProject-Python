@@ -175,7 +175,7 @@ class Attempt(models.Model):
 
 class QuizAttempt(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE) # check this if it nesesary to have quiz here and in Attempt
     date = models.DateTimeField(auto_now_add=True)
     attempt = models.ManyToManyField(Attempt)
 
