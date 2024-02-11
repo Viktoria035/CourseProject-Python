@@ -45,7 +45,7 @@ class Category(models.Model):
         return self.category
     
 #not sure for this class what we are doing here ;()
-class Quizz(models.Model):
+class Quiz(models.Model):
 
     title = models.CharField(verbose_name=_("Title"), 
                              max_length=100, blank=False)
@@ -122,7 +122,7 @@ class Quizz(models.Model):
 
 class Question(models.Model):
     question = models.CharField(max_length=200)
-    quiz = models.ForeignKey(Quizz, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     # max_marks = models.DecimalField(default=0, decimal_places=2, max_digits=6)
     # answer = models.CharField(max_length=200)
@@ -155,7 +155,7 @@ class Answer(models.Model):
     
 
 class Result(models.Model):
-    quiz = models.ForeignKey(Quizz, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     score = models.FloatField(default=0)
     date = models.DateTimeField(auto_now_add=True)

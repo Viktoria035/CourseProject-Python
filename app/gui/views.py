@@ -6,12 +6,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 #from .forms import RegisterUserForm
 from app.functions import calculate_leaderboard_rank
-from .models import Player, Quizz, Category
-from django.views.generic import ListView
+from .models import Player, Quiz, Category
+from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 
 # @login_required(login_url='/login')
 def index(request):
@@ -98,17 +99,36 @@ def view_quiz_categories(request):
     return render(request, 'question/view_quiz_categories.html', context=context)
 
 
-class QuizzListView(ListView):
-    model = Quizz
+class QuizListView(ListView):
+    model = Quiz
+    template_name = 'quiz/quiz_list.html'
 
     def get_queryset(self):
-        queryset = super(QuizzListView, self).get_queryset()
+        queryset = super(QuizListView, self).get_queryset()
         return queryset.filter(draft=False)
 
 
+class QuizDetailView(DetailView):
+    model = Quiz
+    slug_field = 'url'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if self.object.draft and not request.user.has_perm('quiz.change_quiz'):
+            raise PermissionDenied
+
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
+
+class CategoriesListView(ListView):
+    model = Category
+
+
 class ViewQuizListByCategory(ListView):
-    model = Quizz
-    template_name = 'question/quiz_category.html'
+    model = Quiz
+    template_name = 'question/view_quiz_categories.html'
 
     def dispatch(self, request, *args, **kwargs):
         self.category = get_object_or_404(Category, category=self.kwargs['category'])
