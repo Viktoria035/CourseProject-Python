@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 #from .forms import RegisterUserForm
 from app.functions import calculate_leaderboard_rank
-from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, Result
+from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, Attempt, QuizAttempt
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
@@ -104,7 +104,7 @@ def view_quiz(request, quiz_id):
         return redirect('not_found')
     
     if request.method == "POST":
-        result = Result(
+        result = Attempt(
             player=Player.objects.get(user=request.user),
             quiz=quiz
         )
@@ -140,13 +140,13 @@ def view_question(request, quiz_id, question_id):
         question_response.save()
 
         if answer.is_correct:
-            result = Result.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
+            result = Attempt.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
             result.score += answer.points
             result.save()
 
         next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
         if next_question is None:
-            return redirect('result', quiz_id=quiz_id)
+            return redirect('results', quiz_id=quiz_id)
         return redirect('view_question', quiz_id=quiz_id, question_id=next_question.id)
     else:
         answers = Answer.objects.filter(question=question).all()
@@ -157,6 +157,25 @@ def view_question(request, quiz_id, question_id):
         }
         return render(request, 'question/question.html', context=context)
 
+@login_required(login_url='/login')
+def results(request, quiz_id):
+    quiz = Quiz.objects.filter(id=quiz_id).first()
+
+    if quiz is None:
+        return redirect('not_found')
+    
+    context = {
+        'quiz': quiz,
+        'questions': [
+            {
+                'question': question_response.question,
+                'answers': [answer for answer in Answer.objects.filter(question=question_response.question).all()],
+                'user_answer': question_response.answer,
+                'right_answer': [answer for answer in Answer.objects.filter(question=question_response.question, is_correct=True).all()][0]
+            }
+        for question_response in QuestionResponse.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).all()]
+    }
+    return render(request, 'question/result.html', context=context)
 
 class QuizListView(ListView):
     model = Quiz

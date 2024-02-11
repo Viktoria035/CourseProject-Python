@@ -1,0 +1,17 @@
+{% extends "question/base.html" %} 
+{% block content %}
+{% include "question/header.html" %}
+<h1>Your results from {{ quiz.title }} quiz are:</h1>
+<br>
+{% for question in questions %}
+    <h1>{{ question.question }}</h1>
+    <ul><h3>
+    {% for answer in question.answers %}
+        <li>{{ answer.answer }} </li>
+    {% endfor %}
+    <br>
+    <h2>Your answer: {{ question.user_answer.answer }}</h2>
+    <h2>Correct answer: {{ question.right_answer.answer }}</h2>
+    </h3></ul>
+{% endfor %}
+{% endblock %}

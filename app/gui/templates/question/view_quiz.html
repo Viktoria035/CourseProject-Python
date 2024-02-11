@@ -2,9 +2,10 @@
 {% block content %}
 {% include "question/header.html" %}
 <main>
-    <h1>{{ quiz.title }}</h1>
-
-    #TODO: add description and other details of the quiz
+    <h1>Title: {{ quiz.title }}</h1>
+    <h2>Discription: {{ quiz.description }}</h2>
+    <h2>Difficulty: {{ quiz.difficulty }}</h2>
+    <h2>Passing Marks: {{ quiz.pass_mark }}</h2>
 
     <form method="POST">
         {% csrf_token %}

@@ -162,15 +162,25 @@ class QuestionResponse(models.Model):
         return self.answer
 
 
-class Result(models.Model):
+class Attempt(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    score = models.FloatField(default=0)
+    score = models.IntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True)
+    answers = models.ManyToManyField(Answer)
 
     def __str__(self):
         return f"{self.player.user.username} - {self.quiz.title} - {self.score}"
 
+
+class QuizAttempt(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    attempt = models.ManyToManyField(Attempt)
+
+    def __str__(self):
+        return f"{self.player.user.username} - {self.quiz.title}"
 # #check
 # class FreeTextAnswer(Answer):
 #     case_sensitive = models.BooleanField(default=False)
