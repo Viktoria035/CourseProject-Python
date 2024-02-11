@@ -33,7 +33,6 @@ class CategoryManager(models.Manager):
 class Category(models.Model):
 
     category = models.CharField(verbose_name=_("Category"), max_length=100, blank=True, unique=True, null=True)
-
     objects = CategoryManager()
 
 
@@ -44,7 +43,7 @@ class Category(models.Model):
     def __str__(self):
         return self.category
     
-#not sure for this class what we are doing here ;()
+
 class Quiz(models.Model):
 
     title = models.CharField(verbose_name=_("Title"), 
@@ -124,8 +123,6 @@ class Question(models.Model):
     question = models.CharField(max_length=200)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
-    # max_marks = models.DecimalField(default=0, decimal_places=2, max_digits=6)
-    # answer = models.CharField(max_length=200)
 
     def __str__(self):
         return self.question
@@ -136,12 +133,12 @@ class Question(models.Model):
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    correct_answer = models.CharField(max_length=200)
+    answer = models.CharField(max_length=200)
     created = models.DateTimeField(auto_now_add=True)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"question: {self.question.question}, answer: {self.correct_answer}, is_correct: {self.is_correct}"
+        return f"question: {self.question.question}, answer: {self.answer}, is_correct: {self.is_correct}"
 
 
 #     class Meta:
@@ -150,9 +147,19 @@ class Answer(models.Model):
 #     def __str__(self):
 #         return self.correct_answer
     
-#     def is_correct(self, user_answer):
-#         return self.correct_answer == user_answer
-    
+
+class QuestionResponse(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+
+    def is_correct(self):
+        return self.answer.is_correct
+
+    def __str__(self):
+        return self.answer
+
 
 class Result(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)

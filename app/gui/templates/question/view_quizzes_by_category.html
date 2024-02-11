@@ -1,0 +1,12 @@
+{% extends "question/base.html" %} 
+{% block content %}
+{% include "question/header.html" %}
+<main>
+    <h1>Quizzes with {{ category }}</h1>
+    <ul>
+        {% for quiz in quizzes %}
+            <li><a href="{% url 'view_quiz' quiz_id=quiz.id %}">{{ quiz.title }}</a></li>
+        {% endfor %}
+    </ul>
+</main>
+{% endblock %}

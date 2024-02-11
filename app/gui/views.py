@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 #from .forms import RegisterUserForm
 from app.functions import calculate_leaderboard_rank
-from .models import Player, Quiz, Category
+from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, Result
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
@@ -14,7 +14,6 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 
-# @login_required(login_url='/login')
 def index(request):
     """Welcome page."""
     context = {}
@@ -26,24 +25,6 @@ def index(request):
             'rank': Player.objects.get(user=request.user).rank,
         }
     return render(request, 'question/index.html', context)
-
-# def register(request):
-#     if request.method == "POST":
-#         form = RegisterUserForm(request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             # username = form.cleaned_data.get('username')
-#             # raw_password = form.cleaned_data.get('password1')
-#             # user = authenticate(username=username, password=raw_password)
-#             login(request, user)
-#             return redirect(index)
-#     else:
-#         form = RegisterUserForm()
-
-#     context = {
-#         'form': form
-#     }
-#     return render(request, 'registration/register.html', context)
 
 def register(request):
     if request.method == 'POST':
@@ -93,10 +74,88 @@ def leaderboard(request):
 def view_quiz_categories(request):
     """View quiz categories."""
     categories = Category.objects.all()
+    if categories is None:
+        return redirect('not_found')
+    
     context = {
         'categories': categories
     }
     return render(request, 'question/view_quiz_categories.html', context=context)
+
+@login_required(login_url='/login')
+def view_quizzes_by_category(request, category):
+    quizzes = Quiz.objects.filter(category=Category(category=category)).all()
+    
+    if quizzes is None:
+        return redirect('not_found')
+    
+    context = {
+        'quizzes': quizzes,
+        'category': category
+    }
+    return render(request, 'question/view_quizzes_by_category.html', context=context)
+
+@login_required(login_url='/login')
+def view_quiz(request, quiz_id):
+    quiz = Quiz.objects.filter(id=quiz_id).first()
+    question = Question.objects.filter(quiz=quiz).first()
+
+    if quiz is None or question is None:
+        return redirect('not_found')
+    
+    if request.method == "POST":
+        result = Result(
+            player=Player.objects.get(user=request.user),
+            quiz=quiz
+        )
+        result.save()
+        return redirect('view_question', quiz_id=quiz_id, question_id=question.id)
+    context = {
+        'quiz': quiz
+    }
+    return render(request, 'question/view_quiz.html', context=context)
+
+@login_required(login_url='/login')
+def not_found(request):
+    return render(request, 'question/not_found.html')
+
+@login_required(login_url='\login')
+def view_question(request, quiz_id, question_id):
+    quiz = Quiz.objects.filter(id=quiz_id).first()
+    question = Question.objects.filter(id=question_id, quiz=quiz).first()
+
+    if quiz is None or question is None:
+        return redirect('not_found')
+    
+    if request.method == "POST":
+        print(request.POST)
+        answer_response_id = request.POST.get('answer')
+        answer = Answer.objects.filter(question=question, id=answer_response_id).first()
+        question_response = QuestionResponse(
+            player=Player.objects.get(user=request.user),
+            quiz=quiz,
+            question=question,
+            answer=answer
+        )
+        question_response.save()
+
+        if answer.is_correct:
+            result = Result.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
+            result.score += 1
+            result.save()
+
+        next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
+        if next_question is None:
+            return redirect('result', quiz_id=quiz_id)
+        return redirect('view_question', quiz_id=quiz_id, question_id=next_question.id)
+    else:
+        answers = Answer.objects.filter(question=question).all()
+        context = {
+            'quiz': quiz, 
+            'question': question,
+            'answers': answers,
+        }
+        return render(request, 'question/question.html', context=context)
 
 
 class QuizListView(ListView):

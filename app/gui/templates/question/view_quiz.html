@@ -1,0 +1,14 @@
+{% extends "question/base.html" %} 
+{% block content %}
+{% include "question/header.html" %}
+<main>
+    <h1>{{ quiz.title }}</h1>
+
+    #TODO: add description and other details of the quiz
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Start Quiz">
+    </form>
+</main>
+{% endblock %}
