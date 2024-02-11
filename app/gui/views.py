@@ -77,7 +77,6 @@ def question(request):
 
     return render(request, 'question/question.html')
 
-
 @login_required(login_url='/login')
 def leaderboard(request):
     """Leaderboard page."""
@@ -88,6 +87,15 @@ def leaderboard(request):
         'auth': request.user.is_authenticated
     }
     return render(request, 'question/leaderboard.html', context=context)
+
+@login_required(login_url='/login')
+def view_quiz_categories(request):
+    """View quiz categories."""
+    categories = Category.objects.all()
+    context = {
+        'categories': categories
+    }
+    return render(request, 'question/view_quiz_categories.html', context=context)
 
 
 class QuizzListView(ListView):

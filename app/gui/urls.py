@@ -11,4 +11,5 @@ urlpatterns = [
     path('rules', views.rules, name='rules'),
     path('question', views.question, name='question'),
     path('leaderboard', views.leaderboard, name='leaderboard'),
+    path('quiz_categories', views.view_quiz_categories, name='quiz_categories'),
 ]
