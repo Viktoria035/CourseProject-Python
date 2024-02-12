@@ -12,3 +12,4 @@ TODO:
     !!! Create single and multiplayer games !!! -> 
     Create statistics for the time in the application, for correct answered questions ans others -> 
     Create multiple answers, check instead radio, add type in Question, answer_responses_id, cycle for answer_response_id in answer_responses_id, etc.
+    Check view_multiple_choice_question because it does not work right(check why it go in view_single_choice_question)

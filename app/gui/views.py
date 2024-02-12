@@ -120,9 +120,9 @@ def view_quiz(request, quiz_id):
         player.active_attempt = quiz_attempt
         player.save()
         
-        if question.question_type == "single choice":
+        if question.question_type == 'single choice':
             return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=question.id)
-        elif question.question_type == "multiple choice":
+        elif question.question_type == 'multiple choice':
             return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=question.id)
     context = {
         'quiz': quiz
@@ -139,6 +139,7 @@ def view_single_choice_question(request, quiz_id, question_id):
         return redirect('not_found')
     
     if request.method == "POST":
+        print(5)
         answer_response_id = request.POST.get('answer')
         if answer_response_id is None:
             messages.warning(request, 'You have to answer the question to proceed!')
@@ -160,7 +161,11 @@ def view_single_choice_question(request, quiz_id, question_id):
 
         if next_question is None:
             return redirect('results', quiz_id=quiz_id)
-        return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=next_question.id)
+        
+        if next_question.question_type == 'single choice':
+            return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=next_question.id)
+        elif next_question.question_type == 'multiple choice':
+            return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=next_question.id)
     else:
         answers = Answer.objects.filter(question=question).all()
         context = {
@@ -169,11 +174,55 @@ def view_single_choice_question(request, quiz_id, question_id):
             'no_next_question': next_question is None,
             'answers': answers
         }
-        return render(request, 'question/question.html', context=context)
+        return render(request, 'question/single_choice_question.html', context=context)
 
 @login_required(login_url='/login')
 def view_multiple_choice_question(request, quiz_id, question_id):
-    pass
+    quiz = Quiz.objects.filter(id=quiz_id).first()
+    question = Question.objects.filter(id=question_id, quiz=quiz).first()
+    next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
+
+    if quiz is None or question is None:
+        return redirect('not_found')
+    
+    if request.method == "POST":
+        answer_responses_id = request.POST.get('answer')
+        print(request.POST)
+        if not answer_responses_id:
+            messages.warning(request, 'You have to answer the question to proceed!')
+            return redirect(request.path)
+        answers = [Answer.objects.filter(question=question, id=answer_response_id).first() for answer_response_id in answer_responses_id]
+        player = Player.objects.get(user=request.user)
+        for answer in answers:
+            question_response = QuestionResponse(
+                player=player,
+                quiz=quiz,
+                question=question,
+                answer=answer,
+            )
+            question_response.save()
+            player.active_attempt.responses.add(question_response)
+            
+            if answer.is_correct:
+                player.active_attempt.score += answer.points
+                player.active_attempt.save()
+
+        if next_question is None:
+            return redirect('results', quiz_id=quiz_id)
+        
+        if next_question.question_type == 'single choice':
+            return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=next_question.id)
+        elif next_question.question_type == 'multiple choice':
+            return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=next_question.id)
+    else:
+        answers = Answer.objects.filter(question=question).all()
+        context = {
+            'quiz': quiz, 
+            'question': question,
+            'no_next_question': next_question is None,
+            'answers': answers
+        }
+        return render(request, 'question/multiple_choice_question.html', context=context)
 
 @login_required(login_url='/login')
 def results(request, quiz_id):

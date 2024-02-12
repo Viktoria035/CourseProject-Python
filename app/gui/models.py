@@ -111,7 +111,7 @@ class Question(models.Model):
     question = models.CharField(max_length=200)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
-    question_type = models.CharField(max_length=200, default="single choice")
+    question_type = models.CharField(max_length=200, default='single choice')
 
     def __str__(self):
         return self.question
