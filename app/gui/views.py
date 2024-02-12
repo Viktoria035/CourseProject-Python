@@ -4,7 +4,6 @@ from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
-#from .forms import RegisterUserForm
 from app.functions import calculate_leaderboard_rank
 from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, Attempt, QuizAttempt
 from django.views.generic import ListView, DetailView
@@ -104,11 +103,18 @@ def view_quiz(request, quiz_id):
         return redirect('not_found')
     
     if request.method == "POST":
-        result = Attempt(
+        attempt = Attempt(
             player=Player.objects.get(user=request.user),
             quiz=quiz
         )
-        result.save()
+        attempt.save()
+        # check this
+        quiz_attempt = QuizAttempt(
+            player=Player.objects.get(user=request.user),
+            quiz=quiz,
+        )
+        quiz_attempt.save()
+        quiz_attempt.attempt.add(attempt)
         return redirect('view_question', quiz_id=quiz_id, question_id=question.id)
     context = {
         'quiz': quiz
@@ -131,18 +137,24 @@ def view_question(request, quiz_id, question_id):
         print(request.POST)
         answer_response_id = request.POST.get('answer')
         answer = Answer.objects.filter(question=question, id=answer_response_id).first()
+        attempt = Attempt.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
+        quiz_attempt = QuizAttempt.objects.filter(player=Player.objects.get(user=request.user), quiz=quiz, attempt=attempt).first()
+        player = Player.objects.get(user=request.user)
         question_response = QuestionResponse(
-            player=Player.objects.get(user=request.user),
+            player=player,
             quiz=quiz,
             question=question,
-            answer=answer
+            answer=answer,
         )
         question_response.save()
-
+        question_response.quiz_attempt.add(quiz_attempt)
+        
         if answer.is_correct:
-            result = Attempt.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
-            result.score += answer.points
-            result.save()
+            attempt.score += answer.points
+            attempt.answers.add(answer)
+            player.score += answer.points
+            player.save()
+            attempt.save()
 
         next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
         if next_question is None:
@@ -160,12 +172,16 @@ def view_question(request, quiz_id, question_id):
 @login_required(login_url='/login')
 def results(request, quiz_id):
     quiz = Quiz.objects.filter(id=quiz_id).first()
+    attempt = Attempt.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
+    quiz_attempt = QuizAttempt.objects.filter(player=Player.objects.get(user=request.user), quiz=quiz, attempt=attempt).first()
 
-    if quiz is None:
+    if quiz is None or attempt is None or quiz_attempt is None:
         return redirect('not_found')
     
     context = {
         'quiz': quiz,
+        'quiz_attempt': quiz_attempt,
+        'attempt': attempt,
         'questions': [
             {
                 'question': question_response.question,
@@ -173,7 +189,7 @@ def results(request, quiz_id):
                 'user_answer': question_response.answer,
                 'right_answer': [answer for answer in Answer.objects.filter(question=question_response.question, is_correct=True).all()][0]
             }
-        for question_response in QuestionResponse.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).all()]
+        for question_response in QuestionResponse.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user), quiz_attempt=quiz_attempt).all()]
     }
     return render(request, 'question/result.html', context=context)
 

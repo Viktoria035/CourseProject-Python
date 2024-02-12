@@ -149,19 +149,6 @@ class Answer(models.Model):
 #         return self.correct_answer
     
 
-class QuestionResponse(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-
-    def is_correct(self):
-        return self.answer.is_correct
-
-    def __str__(self):
-        return self.answer
-
-
 class Attempt(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
@@ -181,6 +168,21 @@ class QuizAttempt(models.Model):
 
     def __str__(self):
         return f"{self.player.user.username} - {self.quiz.title}"
+    
+
+class QuestionResponse(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    quiz_attempt = models.ManyToManyField(QuizAttempt)
+    
+    def is_correct(self):
+        return self.answer.is_correct
+
+    def __str__(self):
+        return self.answer
+    
 # #check
 # class FreeTextAnswer(Answer):
 #     case_sensitive = models.BooleanField(default=False)

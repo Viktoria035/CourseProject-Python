@@ -5,9 +5,9 @@ TODO:
     "Leaderbord" -> +
     "Start a quizz" -> +
     Create categories with quizzes -> +
+    Get the score from the correct answered questions and update the user information -> +
 
     Fix "rank" and "level" and "score" functions to get the information for every user ->
     !!! Add questions with single, multiple and true/false options !!! -> ~
-    Get the score from the correct answered questions and update the user information -> ~
     !!! Create single and multiplayer games !!! -> 
     Create statistics for the time in the application, for correct answered questions ans others -> 

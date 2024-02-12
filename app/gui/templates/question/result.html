@@ -11,7 +11,9 @@
     {% endfor %}
     <br>
     <h2>Your answer: {{ question.user_answer.answer }}</h2>
-    <h2>Correct answer: {{ question.right_answer.answer }}</h2>
+    <h2>Correct answer: {{ question.right_answer.answer }} - {{ question.right_answer.points }} points</h2>
     </h3></ul>
 {% endfor %}
+<br>
+<h1>Your score: {{ attempt.score }} </h1>
 {% endblock %}
