@@ -16,6 +16,7 @@ class Player(models.Model):
     score = models.IntegerField(default=0)
     rank = models.IntegerField(default=0)
     level = models.CharField(max_length=200)
+    active_attempt = models.ForeignKey('QuizAttempt', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.user.username
@@ -149,33 +150,11 @@ class Answer(models.Model):
 #         return self.correct_answer
     
 
-class Attempt(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    score = models.IntegerField(default=0)
-    date = models.DateTimeField(auto_now_add=True)
-    answers = models.ManyToManyField(Answer)
-
-    def __str__(self):
-        return f"{self.player.user.username} - {self.quiz.title} - {self.score}"
-
-
-class QuizAttempt(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE) # check this if it nesesary to have quiz here and in Attempt
-    date = models.DateTimeField(auto_now_add=True)
-    attempt = models.ManyToManyField(Attempt)
-
-    def __str__(self):
-        return f"{self.player.user.username} - {self.quiz.title}"
-    
-
 class QuestionResponse(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    quiz_attempt = models.ManyToManyField(QuizAttempt)
     
     def is_correct(self):
         return self.answer.is_correct
@@ -199,3 +178,13 @@ class QuestionResponse(models.Model):
 
 #     def __str__(self) -> str:
 #         return f"{self.correct_answer} from {self.choices}"
+
+
+class QuizAttempt(models.Model):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE) # check this if it nesesary to have quiz here and in Attempt
+    date = models.DateTimeField(auto_now_add=True)
+    score = models.IntegerField(default=0)
+    responses = models.ManyToManyField(QuestionResponse)
+
+    def __str__(self):
+        return f"{self.player.user.username} - {self.quiz.title}"

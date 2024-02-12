@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from app.functions import calculate_leaderboard_rank
-from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, Attempt, QuizAttempt
+from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
@@ -97,24 +97,21 @@ def view_quizzes_by_category(request, category):
 @login_required(login_url='/login')
 def view_quiz(request, quiz_id):
     quiz = Quiz.objects.filter(id=quiz_id).first()
-    question = Question.objects.filter(quiz=quiz).first()
 
-    if quiz is None or question is None:
+    if quiz is None:
         return redirect('not_found')
     
     if request.method == "POST":
-        attempt = Attempt(
-            player=Player.objects.get(user=request.user),
-            quiz=quiz
-        )
-        attempt.save()
-        # check this
-        quiz_attempt = QuizAttempt(
-            player=Player.objects.get(user=request.user),
-            quiz=quiz,
-        )
+        question = Question.objects.filter(quiz=quiz).first()
+        if question is None:
+            return redirect('not_found')
+
+        quiz_attempt = QuizAttempt(quiz=quiz)
         quiz_attempt.save()
-        quiz_attempt.attempt.add(attempt)
+        player = Player.objects.get(user=request.user)
+        player.active_attempt = quiz_attempt
+        player.save()
+        
         return redirect('view_question', quiz_id=quiz_id, question_id=question.id)
     context = {
         'quiz': quiz
@@ -129,16 +126,17 @@ def not_found(request):
 def view_question(request, quiz_id, question_id):
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
+    next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
 
     if quiz is None or question is None:
         return redirect('not_found')
     
     if request.method == "POST":
-        print(request.POST)
         answer_response_id = request.POST.get('answer')
+        if answer_response_id is None:
+            messages.warning(request, 'You have to answer the question to proceed!')
+            return redirect(request.path)
         answer = Answer.objects.filter(question=question, id=answer_response_id).first()
-        attempt = Attempt.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
-        quiz_attempt = QuizAttempt.objects.filter(player=Player.objects.get(user=request.user), quiz=quiz, attempt=attempt).first()
         player = Player.objects.get(user=request.user)
         question_response = QuestionResponse(
             player=player,
@@ -147,16 +145,12 @@ def view_question(request, quiz_id, question_id):
             answer=answer,
         )
         question_response.save()
-        question_response.quiz_attempt.add(quiz_attempt)
+        player.active_attempt.responses.add(question_response)
         
         if answer.is_correct:
-            attempt.score += answer.points
-            attempt.answers.add(answer)
-            player.score += answer.points
-            player.save()
-            attempt.save()
+            player.active_attempt.score += answer.points
+            player.active_attempt.save()
 
-        next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
         if next_question is None:
             return redirect('results', quiz_id=quiz_id)
         return redirect('view_question', quiz_id=quiz_id, question_id=next_question.id)
@@ -165,32 +159,35 @@ def view_question(request, quiz_id, question_id):
         context = {
             'quiz': quiz, 
             'question': question,
-            'answers': answers,
+            'no_next_question': next_question is None,
+            'answers': answers
         }
         return render(request, 'question/question.html', context=context)
 
 @login_required(login_url='/login')
 def results(request, quiz_id):
     quiz = Quiz.objects.filter(id=quiz_id).first()
-    attempt = Attempt.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user)).first()
-    quiz_attempt = QuizAttempt.objects.filter(player=Player.objects.get(user=request.user), quiz=quiz, attempt=attempt).first()
+    player = Player.objects.get(user=request.user)
 
-    if quiz is None or attempt is None or quiz_attempt is None:
+    if quiz is None or player.active_attempt is None:
         return redirect('not_found')
     
     context = {
         'quiz': quiz,
-        'quiz_attempt': quiz_attempt,
-        'attempt': attempt,
+        'quiz_attempt': player.active_attempt,
         'questions': [
             {
                 'question': question_response.question,
                 'answers': [answer for answer in Answer.objects.filter(question=question_response.question).all()],
                 'user_answer': question_response.answer,
-                'right_answer': [answer for answer in Answer.objects.filter(question=question_response.question, is_correct=True).all()][0]
+                'right_answer': Answer.objects.filter(question=question_response.question, is_correct=True).first()
             }
-        for question_response in QuestionResponse.objects.filter(quiz=quiz, player=Player.objects.get(user=request.user), quiz_attempt=quiz_attempt).all()]
+        for question_response in player.active_attempt.responses.all()]
     }
+    
+    player.score += player.active_attempt.score
+    player.active_attempt = None
+    player.save()
     return render(request, 'question/result.html', context=context)
 
 class QuizListView(ListView):
