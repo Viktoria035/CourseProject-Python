@@ -74,6 +74,10 @@ def leaderboard(request):
     return render(request, 'question/leaderboard.html', context=context)
 
 @login_required(login_url='/login')
+def not_found(request):
+    return render(request, 'question/not_found.html')
+
+@login_required(login_url='/login')
 def view_quiz_categories(request):
     """View quiz categories."""
     categories = Category.objects.all()
@@ -87,7 +91,7 @@ def view_quiz_categories(request):
 
 @login_required(login_url='/login')
 def view_quizzes_by_category(request, category):
-    quizzes = Quiz.objects.filter(category=Category(category=category)).all()
+    quizzes = Quiz.objects.filter(category=Category.objects.get(category=category)).all()
     
     if quizzes is None:
         return redirect('not_found')
@@ -124,10 +128,6 @@ def view_quiz(request, quiz_id):
         'quiz': quiz
     }
     return render(request, 'question/view_quiz.html', context=context)
-
-@login_required(login_url='/login')
-def not_found(request):
-    return render(request, 'question/not_found.html')
 
 @login_required(login_url='\login')
 def view_single_choice_question(request, quiz_id, question_id):

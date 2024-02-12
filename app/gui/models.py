@@ -105,19 +105,6 @@ class Quiz(models.Model):
 
     def get_questions(self):
         return self.question_set.all()[:self.max_questions] # we use the max_questions to limit the number of questions to be displayed
-    
-    @property
-    def get_max_score(self):
-        return self.get_questions().count()
-    
-    def anon_score_id(self):
-        return str(self.id) + "_score"
-    
-    def anon_q_list(self):
-        return str(self.id) + "_q_list"
-    
-    def anon_q_data(self):
-        return str(self.id) + "_data"
 
 
 class Question(models.Model):
@@ -129,8 +116,8 @@ class Question(models.Model):
     def __str__(self):
         return self.question
     
-    def get_answers(self):
-        return self.answer_set.all() # we reverse reletionship to get all answers for a question, we can do this because we have a foreign key in the answer model
+    # def get_answers(self):
+    #     return self.answer_set.all() # we reverse reletionship to get all answers for a question, we can do this because we have a foreign key in the answer model
 
 
 class Answer(models.Model):
@@ -142,13 +129,6 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"question: {self.question.question}, answer: {self.answer}, is_correct: {self.is_correct}"
-
-
-#     class Meta:
-#         abstract = True
-
-#     def __str__(self):
-#         return self.correct_answer
     
 
 class QuestionResponse(models.Model):
@@ -162,23 +142,6 @@ class QuestionResponse(models.Model):
 
     def __str__(self):
         return self.answer
-    
-# #check
-# class FreeTextAnswer(Answer):
-#     case_sensitive = models.BooleanField(default=False)
-
-#     def is_correct(self, user_answer):
-#         if self.case_sensitive:
-#             return self.correct_answer == user_answer
-#         else:
-#             return self.correct_answer.lower() == user_answer.lower()
-        
-# #check
-# class MultipleChoiceAnswer(Answer):
-#     choices = models.ManyToManyField(Answer, blank=True)
-
-#     def __str__(self) -> str:
-#         return f"{self.correct_answer} from {self.choices}"
 
 
 class QuizAttempt(models.Model):
