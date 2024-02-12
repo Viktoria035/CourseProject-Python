@@ -4,7 +4,7 @@ from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
-from app.functions import calculate_leaderboard_rank
+from app.functions import change_player_level_by_score
 from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
@@ -17,11 +17,14 @@ def index(request):
     """Welcome page."""
     context = {}
     if request.user.is_authenticated:
+        player = Player.objects.get(user=request.user)
+        change_player_level_by_score(player=player)
+        
         context = {
             'username': request.user.username,
-            'level': Player.objects.get(user=request.user).level,
-            'score': Player.objects.get(user=request.user).score,
-            'rank': Player.objects.get(user=request.user).rank,
+            'level': player.level,
+            'score': player.score,
+            'rank': player.rank,
         }
     return render(request, 'question/index.html', context)
 
@@ -112,7 +115,10 @@ def view_quiz(request, quiz_id):
         player.active_attempt = quiz_attempt
         player.save()
         
-        return redirect('view_question', quiz_id=quiz_id, question_id=question.id)
+        if question.question_type == "single choice":
+            return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=question.id)
+        elif question.question_type == "multiple choice":
+            return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=question.id)
     context = {
         'quiz': quiz
     }
@@ -123,7 +129,7 @@ def not_found(request):
     return render(request, 'question/not_found.html')
 
 @login_required(login_url='\login')
-def view_question(request, quiz_id, question_id):
+def view_single_choice_question(request, quiz_id, question_id):
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
     next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
@@ -153,7 +159,7 @@ def view_question(request, quiz_id, question_id):
 
         if next_question is None:
             return redirect('results', quiz_id=quiz_id)
-        return redirect('view_question', quiz_id=quiz_id, question_id=next_question.id)
+        return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=next_question.id)
     else:
         answers = Answer.objects.filter(question=question).all()
         context = {
@@ -163,6 +169,10 @@ def view_question(request, quiz_id, question_id):
             'answers': answers
         }
         return render(request, 'question/question.html', context=context)
+
+@login_required(login_url='/login')
+def view_multiple_choice_question(request, quiz_id, question_id):
+    pass
 
 @login_required(login_url='/login')
 def results(request, quiz_id):
