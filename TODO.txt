@@ -11,3 +11,4 @@ TODO:
     !!! Add questions with single, multiple and true/false options !!! -> ~
     !!! Create single and multiplayer games !!! -> 
     Create statistics for the time in the application, for correct answered questions ans others -> 
+    Create multiple answers, check instead radio, add type in Question, answer_responses_id, cycle for answer_response_id in answer_responses_id, etc.
