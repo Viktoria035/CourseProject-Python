@@ -4,7 +4,7 @@ from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
-from app.functions import change_player_level_by_score
+from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard
 from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
@@ -19,6 +19,7 @@ def index(request):
     if request.user.is_authenticated:
         player = Player.objects.get(user=request.user)
         change_player_level_by_score(player=player)
+        get_player_rank_in_leaderboard(player=player)
         
         context = {
             'username': request.user.username,
