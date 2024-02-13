@@ -128,7 +128,7 @@ class Answer(models.Model):
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"question: {self.question.question}, answer: {self.answer}, is_correct: {self.is_correct}"
+        return f"{self.answer} - {self.points}"
     
 
 class QuestionResponse(models.Model):
@@ -145,7 +145,7 @@ class QuestionResponse(models.Model):
 
 
 class QuizAttempt(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE) # check this if it nesesary to have quiz here and in Attempt
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
     responses = models.ManyToManyField(QuestionResponse)

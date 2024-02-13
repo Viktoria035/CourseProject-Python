@@ -131,7 +131,6 @@ def view_quiz(request, quiz_id):
 
 @login_required(login_url='\login')
 def view_single_choice_question(request, quiz_id, question_id):
-    print("you are in single choice question")
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
     next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
@@ -231,17 +230,23 @@ def results(request, quiz_id):
     if quiz is None or player.active_attempt is None:
         return redirect('not_found')
     
+    questions = Question.objects.filter(quiz=quiz)
     context = {
         'quiz': quiz,
         'quiz_attempt': player.active_attempt,
         'questions': [
             {
-                'question': question_response.question,
-                'answers': [answer for answer in Answer.objects.filter(question=question_response.question).all()],
-                'user_answer': question_response.answer,
-                'right_answer': Answer.objects.filter(question=question_response.question, is_correct=True).first()
+                'question': question,
+                'answers': [answer for answer in Answer.objects.filter(question=question).all()],
+                'user_answers': player.active_attempt.responses.filter(
+                    quiz=quiz,
+                    player=player,
+                    question=question                
+                ).all(),
+                'right_answers': Answer.objects.filter(question=question, is_correct=True).all()
             }
-        for question_response in player.active_attempt.responses.all()]
+            for question in questions
+        ]
     }
     
     player.score += player.active_attempt.score

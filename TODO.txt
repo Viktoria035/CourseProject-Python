@@ -6,10 +6,61 @@ TODO:
     "Start a quizz" -> +
     Create categories with quizzes -> +
     Get the score from the correct answered questions and update the user information -> +
-    Fix "rank" and "level" and "score" functions to get the information for every user ->+
-    
+    Fix "rank" and "level" and "score" functions to get the information for every user -> +
+    Create multiple answers, check instead radio, add type in Question, answer_responses_id, cycle for answer_response_id in answer_responses_id, etc. -> +
+    Check view_multiple_choice_question because it does not work right(check why it go in view_single_choice_question) -> +
+
     !!! Add questions with single, multiple and true/false options !!! -> ~
     !!! Create single and multiplayer games !!! -> 
     Create statistics for the time in the application, for correct answered questions ans others -> 
-    Create multiple answers, check instead radio, add type in Question, answer_responses_id, cycle for answer_response_id in answer_responses_id, etc.
-    Check view_multiple_choice_question because it does not work right(check why it go in view_single_choice_question)
+
+
+
+
+@login_required(login_url='/login')
+def results(request, quiz_id):
+    quiz = Quiz.objects.filter(id=quiz_id).first()
+    player = Player.objects.get(user=request.user)
+
+    if quiz is None or player.active_attempt is None:
+        return redirect('not_found')
+    
+    context = {
+        'quiz': quiz,
+        'quiz_attempt': player.active_attempt,
+        'questions': [
+            {
+                'question': question_response.question,
+                'answers': [answer for answer in Answer.objects.filter(question=question_response.question).all()],
+                'user_answer': question_response.answer,
+                'right_answer': Answer.objects.filter(question=question_response.question, is_correct=True).first()
+            }
+        for question_response in player.active_attempt.responses.all()]
+    }
+    
+    player.score += player.active_attempt.score
+    player.active_attempt = None
+    player.save()
+    return render(request, 'question/result.html', context=context)
+
+
+
+{% extends "question/base.html" %} 
+{% block content %}
+{% include "question/header.html" %}
+<h1>Your results from {{ quiz.title }} quiz are:</h1>
+<br>
+{% for question in questions %}
+    <h1>{{ question.question }}</h1>
+    <ul><h3>
+    {% for answer in question.answers %}
+        <li>{{ answer.answer }} </li>
+    {% endfor %}
+    <br>
+    <h2>Your answer: {{ question.user_answer.answer }} - {{ question.user_answer.points }}</h2>
+    <h2>Correct answer: {{ question.right_answer.answer }} - {{ question.right_answer.points }} points</h2>
+    </h3></ul>
+{% endfor %}
+<br>
+<h1>Your score: {{ quiz_attempt.score }} </h1>
+{% endblock %}

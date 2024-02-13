@@ -10,8 +10,21 @@
         <li>{{ answer.answer }} </li>
     {% endfor %}
     <br>
-    <h2>Your answer: {{ question.user_answer.answer }} - {{ question.user_answer.points }}</h2>
-    <h2>Correct answer: {{ question.right_answer.answer }} - {{ question.right_answer.points }} points</h2>
+    <h2>Your answers: 
+    <br>
+    {% for user_answer in question.user_answers %}
+        {{ user_answer.answer }} points
+        <br>
+    {% endfor %}
+    </h2>
+    <br>
+    <h2>Correct answers: 
+    <br>
+    {% for right_answer in question.right_answers %}
+        {{ right_answer.answer }} - {{ right_answer.points }} points
+        <br>
+    {% endfor %}
+    </h2>
     </h3></ul>
 {% endfor %}
 <br>
