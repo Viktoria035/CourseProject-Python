@@ -8,7 +8,7 @@
         {% csrf_token %}
         {% for answer in answers %}
         <div class="answer">
-          <input class="answer-checkbox" type="checkbox" style="margin-bottom: 0; width: 10px;" name="answers" value="{{answer.id}}">
+          <input class="answer-checkbox" type="checkbox" style="margin-bottom: 0; width: 10px;" name="answer_responses_id" value="{{answer.id}}">
           <label for="answer-label" style="display: inline; margin-left: 5px;">{{ answer.answer }}</label>
         </div>
         {% endfor %}

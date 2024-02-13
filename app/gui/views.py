@@ -131,6 +131,7 @@ def view_quiz(request, quiz_id):
 
 @login_required(login_url='\login')
 def view_single_choice_question(request, quiz_id, question_id):
+    print("you are in single choice question")
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
     next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
@@ -139,7 +140,6 @@ def view_single_choice_question(request, quiz_id, question_id):
         return redirect('not_found')
     
     if request.method == "POST":
-        print(5)
         answer_response_id = request.POST.get('answer')
         if answer_response_id is None:
             messages.warning(request, 'You have to answer the question to proceed!')
@@ -186,9 +186,8 @@ def view_multiple_choice_question(request, quiz_id, question_id):
         return redirect('not_found')
     
     if request.method == "POST":
-        answer_responses_id = request.POST.get('answer')
-        print(request.POST)
-        if not answer_responses_id:
+        answer_responses_id = request.POST.getlist('answer_responses_id')
+        if len(answer_responses_id) == 0:
             messages.warning(request, 'You have to answer the question to proceed!')
             return redirect(request.path)
         answers = [Answer.objects.filter(question=question, id=answer_response_id).first() for answer_response_id in answer_responses_id]
