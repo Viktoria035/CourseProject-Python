@@ -23,4 +23,12 @@ urlpatterns = [
     path('create_quiz', views.create_quiz, name='create_quiz'),
     path('create_question', views.create_question, name='create_question'),
     path('create_answer', views.create_answer, name='create_answer'),
+    path('edit', views.edit, name='edit'),
+    path('edit_category', views.edit_category, name='edit_category'),
+    path('edit_quiz', views.edit_quiz, name='edit_quiz'),
+    path('edit_question', views.edit_question, name='edit_question'),
+    path('edit_answer', views.edit_answer, name='edit_answer'),
+    path('forum_page', views.forum_page, name='forum_page'),
+    path('add_in_forum', views.add_in_forum, name='add_in_forum'),
+    path('add_in_discussion', views.add_in_discussion, name='add_in_discussion'),
 ]

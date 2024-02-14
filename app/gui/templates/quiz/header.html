@@ -7,6 +7,8 @@
       <li><a href="{% url "rules" %}">Quizzes</a></li>
       <li><a href="{% url "leaderboard" %}">Leaderboard</a></li>
       <li><a href="{% url "create" %}">Create on your own</a></li>
+      {% comment %} <li><a href="{% url "edit" %}">Edit</a></li> {% endcomment %}
+      <li><a href="{% url "forum_page" %}">Forum</a></li>
       {% if user.is_authenticated %}
       <li><a href="{% url "logout" %}">Logout</a></li>
       {% else %}

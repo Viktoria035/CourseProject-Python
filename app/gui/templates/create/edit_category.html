@@ -1,0 +1,12 @@
+{% extends "quiz/base.html" %} 
+{% block content %}
+{% include "quiz/header.html" %}
+<body>
+    <h1>Edit Category</h1>
+    <form method="post" action="{% url 'edit_category' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Changes</button>
+    </form>
+</body>
+{% endblock %}

@@ -5,14 +5,14 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard
-from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, QUESTION_TYPES
+from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, Forum, Discussion ,QUESTION_TYPES
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm
+from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm, CreateInForumForm, CreateInDiscussionForm
 
 def index(request):
     """Welcome page."""
@@ -276,12 +276,13 @@ def results(request, quiz_id):
 def create(request):
     """Create page."""
 
-    return render(request, 'forms/create.html')
+    return render(request, 'create/create.html')
 
 @login_required(login_url='/login')
 def create_category(request):
     """Create category page."""
 
+    form = CategoryForm()
     if request.method == 'POST':
         form = CategoryForm(request.POST)
         if form.is_valid():
@@ -291,12 +292,17 @@ def create_category(request):
         else:
             messages.warning(request, 'Invalid form!')
             return redirect(request.path)
-    return render(request, 'forms/create_category.html', {'form': CategoryForm()})
+        
+    context = {
+        'form': form
+    }
+    return render(request, 'create/create_category.html', context=context)
 
 @login_required(login_url='/login')
 def create_quiz(request):
     """Create quiz page."""
 
+    form = QuizForm()
     if request.method == 'POST':
         form = QuizForm(request.POST)
         if form.is_valid():
@@ -306,12 +312,16 @@ def create_quiz(request):
         else:
             messages.warning(request, 'Invalid form!')
             return redirect(request.path)
-    return render(request, 'forms/create_quiz.html', {'form': QuizForm()})
+    context = {
+        'form': form
+    }
+    return render(request, 'create/create_quiz.html', context=context)
 
 @login_required(login_url='/login')
 def create_question(request):
     """Create question page."""
 
+    form = QuestionForm()
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
@@ -321,12 +331,15 @@ def create_question(request):
         else:
             messages.warning(request, 'Invalid form!')
             return redirect(request.path)
-    return render(request, 'forms/create_question.html', {'form': QuestionForm()})
+    context = {
+        'form': form
+    }
+    return render(request, 'create/create_question.html', context=context)
 
 @login_required(login_url='/login')
 def create_answer(request):
     """Create answer page."""
-
+    form = AnswerForm()
     if request.method == 'POST':
         form = AnswerForm(request.POST)
         if form.is_valid():
@@ -336,4 +349,98 @@ def create_answer(request):
         else:
             messages.warning(request, 'Invalid form!')
             return redirect(request.path)
-    return render(request, 'forms/create_answer.html', {'form': AnswerForm()})
+    context = {
+        'form': form
+    }
+    return render(request, 'create/create_answer.html', context=context)
+
+@login_required(login_url='/login')
+def forum_page(request):
+    """Forum page."""
+
+    forums = Forum.objects.all()
+    count = forums.count()
+    discussions = []
+    for forum in forums:
+        discussions.append(Discussion.objects.filter(forum=forum).all())
+
+    context = {
+        'forums': forums,
+        'discussions': discussions,
+        'count': count,
+        'player_name': Player.objects.get(user=request.user).user.username
+    }
+    return render(request, 'forum/forum_page.html', context=context)
+
+@login_required(login_url='/login')
+def add_in_forum(request):
+    """Add in forum page."""
+    form = CreateInForumForm()
+    if request.method == 'POST':
+        form = CreateInForumForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Forum was successfully added.')
+            return redirect(request.path)
+    context = {
+        'form': form
+    }
+    return render(request, 'forum/add_in_forum.html', context=context)
+
+@login_required(login_url='/login')
+def add_in_discussion(request):
+    """Add in discussion page."""
+    form = CreateInDiscussionForm()
+    if request.method == 'POST':
+        form = CreateInDiscussionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Discussion was successfully added.')
+            return redirect(request.path)
+    context = {
+        'form': form
+    }
+    return render(request, 'forum/add_in_discussion.html', context=context)
+
+@login_required(login_url='/login')
+def edit(request):
+    """Edit category page."""
+
+    return render(request, 'forms/edit.html')
+
+@login_required(login_url='/login')
+def edit_quiz(request):
+    """Edit quiz page."""
+
+    pass
+
+@login_required(login_url='/login')
+def edit_question(request):
+    """Edit question page."""
+
+    pass
+
+@login_required(login_url='/login')
+def edit_answer(request):
+    """Edit answer page."""
+
+    pass
+
+@login_required(login_url='/login')
+def edit_category(request):
+    """Edit category page."""
+
+    if request.method == 'POST':
+        category_title = request.POST.get('category')
+        category = Category.objects.filter(category=category_title).first()
+        if category is None:
+            return redirect('not_found')
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Category was successfully edited.')
+            return redirect('edit_category', category_title=category.category)
+        else:
+            messages.warning(request, 'Invalid form!')
+            return redirect('edit_category', category_title=category.category)
+    return render(request, 'forms/edit_category.html', {'form': CategoryForm()})

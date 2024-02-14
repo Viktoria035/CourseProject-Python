@@ -26,22 +26,11 @@ class Player(models.Model):
 
     def __str__(self):
         return self.user.username
-    
-
-class CategoryManager(models.Manager):
-
-    def new_category(self, name):
-        category = self.create(category=re.sub('\s+', '-', category).lower())
-
-        category.save()
-        return category
 
 
 class Category(models.Model):
 
     category = models.CharField(verbose_name=_("Category"), max_length=100, blank=True, unique=True, null=True)
-    objects = CategoryManager()
-
 
     class Meta:
         verbose_name = _("Category")
@@ -158,3 +147,24 @@ class QuizAttempt(models.Model):
 
     def __str__(self):
         return f"{self.player.user.username} - {self.quiz.title}"
+    
+
+class Forum(models.Model):
+    player_name = models.CharField(max_length=200, default='Anonymous')
+    topic = models.CharField(max_length=300)
+    description = models.CharField(max_length=500, blank=True)
+    #link = models.CharField(max_length=200, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.topic
+
+
+class Discussion(models.Model):
+    """Child class of Forum that stores views from different users(players)"""
+    
+    forum = models.ForeignKey(Forum, on_delete=models.CASCADE)
+    discuss = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.forum
