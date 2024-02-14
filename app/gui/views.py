@@ -27,7 +27,7 @@ def index(request):
             'score': player.score,
             'rank': player.rank,
         }
-    return render(request, 'question/index.html', context)
+    return render(request, 'quiz/index.html', context)
 
 def register(request):
     if request.method == 'POST':
@@ -54,13 +54,13 @@ def register(request):
 def rules(request):
     """Rules page."""
 
-    return render(request, 'question/rules.html')
+    return render(request, 'quiz/rules.html')
 
 @login_required(login_url='/login')
 def question(request):
     """Question page."""
 
-    return render(request, 'question/question.html')
+    return render(request, 'quiz/question.html')
 
 @login_required(login_url='/login')
 def leaderboard(request):
@@ -71,11 +71,11 @@ def leaderboard(request):
         'profiles': profiles,
         'auth': request.user.is_authenticated
     }
-    return render(request, 'question/leaderboard.html', context=context)
+    return render(request, 'quiz/leaderboard.html', context=context)
 
 @login_required(login_url='/login')
 def not_found(request):
-    return render(request, 'question/not_found.html')
+    return render(request, 'quiz/not_found.html')
 
 @login_required(login_url='/login')
 def view_quiz_categories(request):
@@ -87,7 +87,7 @@ def view_quiz_categories(request):
     context = {
         'categories': categories
     }
-    return render(request, 'question/view_quiz_categories.html', context=context)
+    return render(request, 'quiz/view_quiz_categories.html', context=context)
 
 @login_required(login_url='/login')
 def view_quizzes_by_category(request, category):
@@ -100,7 +100,7 @@ def view_quizzes_by_category(request, category):
         'quizzes': quizzes,
         'category': category
     }
-    return render(request, 'question/view_quizzes_by_category.html', context=context)
+    return render(request, 'quiz/view_quizzes_by_category.html', context=context)
 
 @login_required(login_url='/login')
 def view_quiz(request, quiz_id):
@@ -127,7 +127,7 @@ def view_quiz(request, quiz_id):
     context = {
         'quiz': quiz
     }
-    return render(request, 'question/view_quiz.html', context=context)
+    return render(request, 'quiz/view_quiz.html', context=context)
 
 @login_required(login_url='\login')
 def view_single_choice_question(request, quiz_id, question_id):
@@ -173,7 +173,7 @@ def view_single_choice_question(request, quiz_id, question_id):
             'no_next_question': next_question is None,
             'answers': answers
         }
-        return render(request, 'question/single_choice_question.html', context=context)
+        return render(request, 'quiz/single_choice_question.html', context=context)
 
 @login_required(login_url='/login')
 def view_multiple_choice_question(request, quiz_id, question_id):
@@ -220,7 +220,7 @@ def view_multiple_choice_question(request, quiz_id, question_id):
             'no_next_question': next_question is None,
             'answers': answers
         }
-        return render(request, 'question/multiple_choice_question.html', context=context)
+        return render(request, 'quiz/multiple_choice_question.html', context=context)
 
 @login_required(login_url='/login')
 def results(request, quiz_id):
@@ -252,49 +252,4 @@ def results(request, quiz_id):
     player.score += player.active_attempt.score
     player.active_attempt = None
     player.save()
-    return render(request, 'question/result.html', context=context)
-
-class QuizListView(ListView):
-    model = Quiz
-    template_name = 'quiz/quiz_list.html'
-
-    def get_queryset(self):
-        queryset = super(QuizListView, self).get_queryset()
-        return queryset.filter(draft=False)
-
-
-class QuizDetailView(DetailView):
-    model = Quiz
-    slug_field = 'url'
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-
-        if self.object.draft and not request.user.has_perm('quiz.change_quiz'):
-            raise PermissionDenied
-
-        context = self.get_context_data(object=self.object)
-        return self.render_to_response(context)
-
-
-class CategoriesListView(ListView):
-    model = Category
-
-
-class ViewQuizListByCategory(ListView):
-    model = Quiz
-    template_name = 'question/view_quiz_categories.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        self.category = get_object_or_404(Category, category=self.kwargs['category'])
-
-        return super(ViewQuizListByCategory, self).dispatch(request, *args, **kwargs)
-    
-    def get_context_data(self, **kwargs):
-        context = super(ViewQuizListByCategory, self).get_context_data(**kwargs)
-        context['category'] = self.category
-        return context
-    
-    def get_queryset(self):
-        queryset = self.category.quizz_set.all()
-        return queryset
+    return render(request, 'quiz/result.html', context=context)

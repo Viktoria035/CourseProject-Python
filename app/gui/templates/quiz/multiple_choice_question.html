@@ -1,6 +1,6 @@
-{% extends "question/base.html" %} 
+{% extends "quiz/base.html" %} 
 {% block content %}
-{% include "question/header.html" %}
+{% include "quiz/header.html" %}
 <div>
     <h1 style="margin-top: 5em; margin-bottom: 1em;">{{ question.question }}<h1>
     <div class="answers">
@@ -8,7 +8,7 @@
         {% csrf_token %}
         {% for answer in answers %}
         <div class="answer">
-          <input class="answer-radio-button" type="radio" style="margin-bottom: 0; width: 10px;" name="answer" value="{{answer.id}}">
+          <input class="answer-checkbox" type="checkbox" style="margin-bottom: 0; width: 10px;" name="answer_responses_id" value="{{answer.id}}">
           <label for="answer-label" style="display: inline; margin-left: 5px;">{{ answer.answer }}</label>
         </div>
         {% endfor %}
