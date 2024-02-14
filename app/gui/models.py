@@ -57,6 +57,10 @@ class Quiz(models.Model):
                                  blank=True, verbose_name=_("Category"), 
                                  on_delete=models.CASCADE)
     
+    player = models.ForeignKey(Player, verbose_name=_("Player"),
+                               help_text=_("The player who created the quiz."),
+                               on_delete=models.CASCADE, null=True)
+
     # random_order = models.BooleanField(verbose_name=_("Random Order"), 
     #                                    blank=False, default=False, 
     #                                    help_text=_("Display the questions in a random order or as they are set?"))
@@ -107,6 +111,7 @@ class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     question_type = models.CharField(max_length=15, choices=QUESTION_TYPES, default='single choice')
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.question
@@ -121,7 +126,8 @@ class Answer(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     points = models.IntegerField(default=1)
     is_correct = models.BooleanField(default=False)
-
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
+    
     def __str__(self):
         return f"{self.answer} - {self.points}"
     

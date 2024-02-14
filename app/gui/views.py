@@ -312,7 +312,9 @@ def create_quiz(request):
     if request.method == 'POST':
         form = QuizForm(request.POST)
         if form.is_valid():
-            form.save()
+            quiz = form.save(commit=False)
+            quiz.player = Player.objects.get(user=request.user)
+            quiz.save()
             messages.success(request, 'Quiz was successfully added. Continue with adding question/s!')
             return redirect(request.path)
         else:
@@ -331,7 +333,9 @@ def create_question(request):
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
-            form.save()
+            question = form.save(commit=False)
+            question.player = Player.objects.get(user=request.user)
+            question.save()
             messages.success(request, 'Question/s was/were successfully added. Continue with adding answer/s!')
             return redirect(request.path)
         else:
@@ -349,7 +353,9 @@ def create_answer(request):
     if request.method == 'POST':
         form = AnswerForm(request.POST)
         if form.is_valid():
-            form.save()
+            answer = form.save(commit=False)
+            answer.player = Player.objects.get(user=request.user)
+            answer.save()
             messages.success(request, 'Answer/s was/were successfully added.')
             return redirect(request.path)
         else:
