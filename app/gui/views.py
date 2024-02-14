@@ -273,6 +273,12 @@ def results(request, quiz_id):
     return render(request, 'quiz/result.html', context=context)
 
 @login_required(login_url='/login')
+def create(request):
+    """Create page."""
+
+    return render(request, 'forms/create.html')
+
+@login_required(login_url='/login')
 def create_category(request):
     """Create category page."""
 
@@ -280,8 +286,54 @@ def create_category(request):
         form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('quiz_categories') # should be changed to the create_quiz for this category
+            messages.success(request, 'Category was successfully created. Continue with adding quiz/es')
+            return redirect(request.path)
         else:
             messages.warning(request, 'Invalid form!')
             return redirect(request.path)
     return render(request, 'forms/create_category.html', {'form': CategoryForm()})
+
+@login_required(login_url='/login')
+def create_quiz(request):
+    """Create quiz page."""
+
+    if request.method == 'POST':
+        form = QuizForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Quiz was successfully added. Continue with adding question/s!')
+            return redirect(request.path)
+        else:
+            messages.warning(request, 'Invalid form!')
+            return redirect(request.path)
+    return render(request, 'forms/create_quiz.html', {'form': QuizForm()})
+
+@login_required(login_url='/login')
+def create_question(request):
+    """Create question page."""
+
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Question/s was/were successfully added. Continue with adding answer/s!')
+            return redirect(request.path)
+        else:
+            messages.warning(request, 'Invalid form!')
+            return redirect(request.path)
+    return render(request, 'forms/create_question.html', {'form': QuestionForm()})
+
+@login_required(login_url='/login')
+def create_answer(request):
+    """Create answer page."""
+
+    if request.method == 'POST':
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Answer/s was/were successfully added.')
+            return redirect(request.path)
+        else:
+            messages.warning(request, 'Invalid form!')
+            return redirect(request.path)
+    return render(request, 'forms/create_answer.html', {'form': AnswerForm()})

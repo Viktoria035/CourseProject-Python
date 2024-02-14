@@ -2,7 +2,7 @@
 {% block content %}
 {% include "quiz/header.html" %}
 <body>
-    <h1>Create Category</h1>
+    <h1>Create Quiz</h1>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
