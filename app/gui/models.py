@@ -30,7 +30,7 @@ class Player(models.Model):
 
 class Category(models.Model):
 
-    category = models.CharField(verbose_name=_("Category"), max_length=100, blank=True, unique=True, null=True)
+    category = models.CharField(verbose_name=_("Category"), max_length=100, unique=True, null=True)
 
     class Meta:
         verbose_name = _("Category")

@@ -273,6 +273,12 @@ def results(request, quiz_id):
     return render(request, 'quiz/result.html', context=context)
 
 @login_required(login_url='/login')
+def create_edit_page(request):
+    """Create and edit page."""
+
+    return render(request, 'create/create_edit_page.html')
+
+@login_required(login_url='/login')
 def create(request):
     """Create page."""
 
@@ -405,7 +411,7 @@ def add_in_discussion(request):
 def edit(request):
     """Edit category page."""
 
-    return render(request, 'forms/edit.html')
+    return render(request, 'create/edit.html')
 
 @login_required(login_url='/login')
 def edit_quiz(request):
@@ -442,4 +448,4 @@ def edit_category(request):
         else:
             messages.warning(request, 'Invalid form!')
             return redirect('edit_category', category_title=category.category)
-    return render(request, 'forms/edit_category.html', {'form': CategoryForm()})
+    return render(request, 'create/edit_category.html', {'form': CategoryForm()})
