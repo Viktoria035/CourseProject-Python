@@ -3,9 +3,8 @@
 {% include "quiz/header.html" %}
 <body>
     <h1>Edit Category</h1>
-    <form method="post" action="{% url 'edit_category' %}">
+    <form method="POST" >
         {% csrf_token %}
-        {{ form.as_p }}
         <button type="submit">Save Changes</button>
     </form>
 </body>

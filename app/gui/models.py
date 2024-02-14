@@ -31,6 +31,7 @@ class Player(models.Model):
 class Category(models.Model):
 
     category = models.CharField(verbose_name=_("Category"), max_length=100, unique=True, null=True)
+    player = models.ForeignKey(Player, verbose_name=_("Player"), on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = _("Category")
@@ -111,7 +112,7 @@ class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     question_type = models.CharField(max_length=15, choices=QUESTION_TYPES, default='single choice')
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
+    # player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.question
@@ -126,8 +127,8 @@ class Answer(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     points = models.IntegerField(default=1)
     is_correct = models.BooleanField(default=False)
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
-    
+    # player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
+
     def __str__(self):
         return f"{self.answer} - {self.points}"
     

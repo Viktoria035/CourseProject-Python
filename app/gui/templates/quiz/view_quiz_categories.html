@@ -5,7 +5,10 @@
   <h1>Quiz Categories</h1>
   <ul>
       {% for category in categories %}
-          <li><a href="{% url 'quizzes_by_category' category=category.category %}">{{ category.category }}</a></li>
+        <li><a href="{% url 'quizzes_by_category' category=category.category %}">{{ category.category }}</a></li>
+      {% comment %} {% elif '/create/delete_category' in request.path %}
+          <li><a href="{% url 'delete_category.html' category=category_id %}">{{ category.category }}</a></li> 
+      {% endif %} {% endcomment %}
       {% endfor %}
   </ul>
 </main>

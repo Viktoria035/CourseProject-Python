@@ -292,7 +292,9 @@ def create_category(request):
     if request.method == 'POST':
         form = CategoryForm(request.POST)
         if form.is_valid():
-            form.save()
+            category = form.save(commit=False)
+            category.player = Player.objects.get(user=request.user)
+            category.save()
             messages.success(request, 'Category was successfully created. Continue with adding quiz/es')
             return redirect(request.path)
         else:
@@ -438,20 +440,15 @@ def edit_answer(request):
     pass
 
 @login_required(login_url='/login')
-def edit_category(request):
+def delete_category(request, category_id):
     """Edit category page."""
 
-    if request.method == 'POST':
-        category_title = request.POST.get('category')
-        category = Category.objects.filter(category=category_title).first()
-        if category is None:
-            return redirect('not_found')
-        form = CategoryForm(request.POST, instance=category)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Category was successfully edited.')
-            return redirect('edit_category', category_title=category.category)
-        else:
-            messages.warning(request, 'Invalid form!')
-            return redirect('edit_category', category_title=category.category)
-    return render(request, 'create/edit_category.html', {'form': CategoryForm()})
+    category = get_object_or_404(Category, id=category_id)
+
+    if request.user == category.player.user:
+        category.delete()
+        messages.success(request, 'Category deleted successfully!')
+        return redirect('quiz_categories')
+    else:
+        messages.error(request, 'You are not authorized to delete this category!')
+        return redirect('delete_category', category_id=category_id)
