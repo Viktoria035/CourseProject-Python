@@ -28,7 +28,7 @@
                         {%for discuss in discussions%}
                         {%for objs in discuss%}  
                         {% if objs.forum == forum %}
-                           {{ player_name }} - {{objs.discuss}}
+                            - {{objs.discuss}}
                            <br>
                            {% endif %}
                            {%endfor%}

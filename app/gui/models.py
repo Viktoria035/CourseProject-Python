@@ -167,4 +167,4 @@ class Discussion(models.Model):
     discuss = models.CharField(max_length=500)
 
     def __str__(self):
-        return self.forum
+        return self.forum.topic

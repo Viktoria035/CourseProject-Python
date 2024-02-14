@@ -368,7 +368,6 @@ def forum_page(request):
         'forums': forums,
         'discussions': discussions,
         'count': count,
-        'player_name': Player.objects.get(user=request.user).user.username
     }
     return render(request, 'forum/forum_page.html', context=context)
 
