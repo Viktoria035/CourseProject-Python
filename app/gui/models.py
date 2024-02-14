@@ -11,6 +11,12 @@ DIFF_CHOICES = (
     ('hard', 'Hard'),
 )
 
+QUESTION_TYPES = (
+    ('single choice', 'Single Choice'),
+    ('multiple choice', 'Multiple Choice'),
+    #('true or false', 'True or False'),
+)
+
 class Player(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
@@ -62,38 +68,38 @@ class Quiz(models.Model):
                                  blank=True, verbose_name=_("Category"), 
                                  on_delete=models.CASCADE)
     
-    random_order = models.BooleanField(verbose_name=_("Random Order"), 
-                                       blank=False, default=False, 
-                                       help_text=_("Display the questions in a random order or as they are set?"))
+    # random_order = models.BooleanField(verbose_name=_("Random Order"), 
+    #                                    blank=False, default=False, 
+    #                                    help_text=_("Display the questions in a random order or as they are set?"))
 
     max_questions = models.PositiveIntegerField(verbose_name=_("Max Questions"), 
                                                 blank=True, null=True, 
                                                 help_text=_("Number of questions to be answered on each attempt"))
 
-    answers_at_end = models.BooleanField(verbose_name=_("Answers at end"), 
-                                         blank=False, default=False, 
-                                         help_text=_("Display the correct answers when the quiz is finished?"))
+    # answers_at_end = models.BooleanField(verbose_name=_("Answers at end"), 
+    #                                      blank=False, default=False, 
+    #                                      help_text=_("Display the correct answers when the quiz is finished?"))
 
-    single_attempt = models.BooleanField(verbose_name=_("Single Attempt"), 
-                                         blank=False, default=False, 
-                                         help_text=_("If yes, only one attempt is permitted"))
+    # single_attempt = models.BooleanField(verbose_name=_("Single Attempt"), 
+    #                                      blank=False, default=False, 
+    #                                      help_text=_("If yes, only one attempt is permitted"))
 
     pass_mark = models.SmallIntegerField(verbose_name=_("Pass Mark"), 
                                          blank=True, default=0, 
                                          help_text=_("Percentage required to pass. Leave empty if no pass mark is required"), 
                                          validators=[MaxValueValidator(100)])
 
-    success_text = models.TextField(verbose_name=_("Success Text"), 
-                                    blank=True, 
-                                    help_text=_("Displayed if user passes. HTML and Textile valid."))
+    # success_text = models.TextField(verbose_name=_("Success Text"), 
+    #                                 blank=True, 
+    #                                 help_text=_("Displayed if user passes. HTML and Textile valid."))
 
-    fail_text = models.TextField(verbose_name=_("Fail Text"), 
-                                 blank=True, 
-                                 help_text=_("Displayed if user fails. HTML and Textile valid."))
+    # fail_text = models.TextField(verbose_name=_("Fail Text"), 
+    #                              blank=True, 
+    #                              help_text=_("Displayed if user fails. HTML and Textile valid."))
 
-    draft = models.BooleanField(verbose_name=_("Draft"), 
-                                blank=True, default=False, 
-                                help_text=_("If yes, the quiz is not displayed in the quiz list and can only be taken by users who can edit quizzes."))
+    # draft = models.BooleanField(verbose_name=_("Draft"), 
+    #                             blank=True, default=False, 
+    #                             help_text=_("If yes, the quiz is not displayed in the quiz list and can only be taken by users who can edit quizzes."))
 
 
     class Meta:
@@ -111,7 +117,7 @@ class Question(models.Model):
     question = models.CharField(max_length=200)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
-    question_type = models.CharField(max_length=200, default='single choice')
+    question_type = models.CharField(max_length=15, choices=QUESTION_TYPES, default='single choice')
 
     def __str__(self):
         return self.question

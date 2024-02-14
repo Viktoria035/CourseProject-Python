@@ -1,33 +1,25 @@
-# from django.contrib.auth.forms import UserCreationForm
-# from django.contrib.auth.models import User
+from django import forms
+from .models import Player, Category, Quiz, Question, Answer, QuizAttempt
 
-# class RegisterUserForm(UserCreationForm):
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['category']
 
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
 
-#         for fieldname in ['username', 'password1', 'password2']:
-#             self.fields[fieldname].help_text = None
+class QuizForm(forms.ModelForm):
+    class Meta:
+        model = Quiz
+        fields = ['title', 'description', 'difficulty', 'category', 'max_questions', 'pass_mark']
 
-#     class Meta:
-#         model = User
-#         fields = ("username", "email",
-#                   "password1", "password2")
 
-# If something is correct, the second one is -> UserRegisterForm and UserLogInForm
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['question', 'quiz', 'question_type']
 
-# from django.contrib.auth.forms import UserCreationForm
-# from django.contrib.auth.models import User
-# from django import forms
 
-# class UserRegisterForm(UserCreationForm):
-#     email=forms.EmailField()
-
-#     class Meta:
-#         model=User
-#         fields=['username','email','password1','password2']
-
-# class UserLogInForm(forms.ModelForm):
-#     class Meta:
-#         model=User
-#         fields=['username','password']
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = ['question', 'answer', 'points', 'is_correct']

@@ -5,16 +5,18 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard
-from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt
+from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, QUESTION_TYPES
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm
 
 def index(request):
     """Welcome page."""
+
     context = {}
     if request.user.is_authenticated:
         player = Player.objects.get(user=request.user)
@@ -30,25 +32,27 @@ def index(request):
     return render(request, 'quiz/index.html', context)
 
 def register(request):
+    """Register page."""
+
     if request.method == 'POST':
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        password_c = request.POST.get("password-c")
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password_c = request.POST.get('password-c')
         if (password == password_c):
             try:
                 user = User.objects.create_user(username, email, password);
                 user.save()
                 Player(user=user).save()
-                messages.success(request, "Account created")
-                return redirect("login")
+                messages.success(request, 'Account created')
+                return redirect('login')
             except IntegrityError:
-                messages.info(request, "Username taken, Try different")
-                return render(request, "registration/register.html")
+                messages.info(request, 'Username taken, Try different')
+                return render(request, 'registration/register.html')
         messages.error(request, "Password doesn't match Confirm Password")
     if request.user.is_authenticated:
         return redirect('home')
-    return render(request, "registration/register.html")
+    return render(request, 'registration/register.html')
 
 @login_required(login_url='/login')
 def rules(request):
@@ -65,6 +69,7 @@ def question(request):
 @login_required(login_url='/login')
 def leaderboard(request):
     """Leaderboard page."""
+
     profiles = Player.objects.all().order_by('-score')
 
     context = {
@@ -75,11 +80,14 @@ def leaderboard(request):
 
 @login_required(login_url='/login')
 def not_found(request):
+    """Not found page."""
+
     return render(request, 'quiz/not_found.html')
 
 @login_required(login_url='/login')
 def view_quiz_categories(request):
     """View quiz categories."""
+
     categories = Category.objects.all()
     if categories is None:
         return redirect('not_found')
@@ -91,6 +99,8 @@ def view_quiz_categories(request):
 
 @login_required(login_url='/login')
 def view_quizzes_by_category(request, category):
+    """View quizzes by category."""
+
     quizzes = Quiz.objects.filter(category=Category.objects.get(category=category)).all()
     
     if quizzes is None:
@@ -104,12 +114,14 @@ def view_quizzes_by_category(request, category):
 
 @login_required(login_url='/login')
 def view_quiz(request, quiz_id):
+    """View quiz."""
+
     quiz = Quiz.objects.filter(id=quiz_id).first()
 
     if quiz is None:
         return redirect('not_found')
     
-    if request.method == "POST":
+    if request.method == 'POST':
         question = Question.objects.filter(quiz=quiz).first()
         if question is None:
             return redirect('not_found')
@@ -131,6 +143,8 @@ def view_quiz(request, quiz_id):
 
 @login_required(login_url='\login')
 def view_single_choice_question(request, quiz_id, question_id):
+    """View single choice question."""
+
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
     next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
@@ -138,7 +152,7 @@ def view_single_choice_question(request, quiz_id, question_id):
     if quiz is None or question is None:
         return redirect('not_found')
     
-    if request.method == "POST":
+    if request.method == 'POST':
         answer_response_id = request.POST.get('answer')
         if answer_response_id is None:
             messages.warning(request, 'You have to answer the question to proceed!')
@@ -177,6 +191,8 @@ def view_single_choice_question(request, quiz_id, question_id):
 
 @login_required(login_url='/login')
 def view_multiple_choice_question(request, quiz_id, question_id):
+    """View multiple choice question."""
+
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
     next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
@@ -184,7 +200,7 @@ def view_multiple_choice_question(request, quiz_id, question_id):
     if quiz is None or question is None:
         return redirect('not_found')
     
-    if request.method == "POST":
+    if request.method == 'POST':
         answer_responses_id = request.POST.getlist('answer_responses_id')
         if len(answer_responses_id) == 0:
             messages.warning(request, 'You have to answer the question to proceed!')
@@ -208,9 +224,9 @@ def view_multiple_choice_question(request, quiz_id, question_id):
         if next_question is None:
             return redirect('results', quiz_id=quiz_id)
         
-        if next_question.question_type == 'single choice':
+        if next_question.question_type == QUESTION_TYPES[0][0]:
             return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=next_question.id)
-        elif next_question.question_type == 'multiple choice':
+        elif next_question.question_type == QUESTION_TYPES[1][0]:
             return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=next_question.id)
     else:
         answers = Answer.objects.filter(question=question).all()
@@ -224,6 +240,8 @@ def view_multiple_choice_question(request, quiz_id, question_id):
 
 @login_required(login_url='/login')
 def results(request, quiz_id):
+    """Results page."""
+
     quiz = Quiz.objects.filter(id=quiz_id).first()
     player = Player.objects.get(user=request.user)
 
@@ -253,3 +271,17 @@ def results(request, quiz_id):
     player.active_attempt = None
     player.save()
     return render(request, 'quiz/result.html', context=context)
+
+@login_required(login_url='/login')
+def create_category(request):
+    """Create category page."""
+
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('quiz_categories') # should be changed to the create_quiz for this category
+        else:
+            messages.warning(request, 'Invalid form!')
+            return redirect(request.path)
+    return render(request, 'forms/create_category.html', {'form': CategoryForm()})

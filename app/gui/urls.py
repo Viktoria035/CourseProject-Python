@@ -18,4 +18,5 @@ urlpatterns = [
     path('quiz/<quiz_id>/single_choice_question/<question_id>', views.view_single_choice_question, name='view_single_choice_question'),
     path('quiz/<quiz_id>/multiple_choice_question/<question_id>', views.view_multiple_choice_question, name='view_multiple_choice_question'),
     path('results/<quiz_id>', views.results, name='results'),
+    path('create_category', views.create_category, name='create_category'),
 ]
