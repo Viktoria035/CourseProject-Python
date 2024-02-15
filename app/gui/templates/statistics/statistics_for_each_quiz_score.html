@@ -2,7 +2,7 @@
 {% block content %}
 {% include "quiz/header.html" %}
 <main>
-    <h1>Points earned per day since Registration</h1>
+    <h1>Points earned for each quiz</h1>
     {% if chart %}
         <img src="data:image/png;base64, {{chart|safe}}">
     {% endif %}

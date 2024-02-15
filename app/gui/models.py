@@ -64,38 +64,14 @@ class Quiz(models.Model):
                                help_text=_("The player who created the quiz."),
                                on_delete=models.CASCADE, null=True)
 
-    # random_order = models.BooleanField(verbose_name=_("Random Order"), 
-    #                                    blank=False, default=False, 
-    #                                    help_text=_("Display the questions in a random order or as they are set?"))
-
     max_questions = models.PositiveIntegerField(verbose_name=_("Max Questions"), 
                                                 blank=True, null=True, 
                                                 help_text=_("Number of questions to be answered on each attempt"))
-
-    # answers_at_end = models.BooleanField(verbose_name=_("Answers at end"), 
-    #                                      blank=False, default=False, 
-    #                                      help_text=_("Display the correct answers when the quiz is finished?"))
-
-    # single_attempt = models.BooleanField(verbose_name=_("Single Attempt"), 
-    #                                      blank=False, default=False, 
-    #                                      help_text=_("If yes, only one attempt is permitted"))
 
     pass_mark = models.SmallIntegerField(verbose_name=_("Pass Mark"), 
                                          blank=True, default=0, 
                                          help_text=_("Percentage required to pass. Leave empty if no pass mark is required"), 
                                          validators=[MaxValueValidator(100)])
-
-    # success_text = models.TextField(verbose_name=_("Success Text"), 
-    #                                 blank=True, 
-    #                                 help_text=_("Displayed if user passes. HTML and Textile valid."))
-
-    # fail_text = models.TextField(verbose_name=_("Fail Text"), 
-    #                              blank=True, 
-    #                              help_text=_("Displayed if user fails. HTML and Textile valid."))
-
-    # draft = models.BooleanField(verbose_name=_("Draft"), 
-    #                             blank=True, default=False, 
-    #                             help_text=_("If yes, the quiz is not displayed in the quiz list and can only be taken by users who can edit quizzes."))
 
 
     class Meta:

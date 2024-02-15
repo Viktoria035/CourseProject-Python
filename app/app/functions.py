@@ -79,14 +79,26 @@ def get_graph():
     buffer.close()
     return graph
 
-def get_plot(x, y):
+def get_plot_for_per_player_since_registration(x, y):
     plt.switch_backend('AGG')
     plt.figure(figsize=(10, 5))
-    plt.title('Points Earned per Day Since Registration')
-    plt.plot(x, y)
+    plt.title('Points Earned per Day Since Registration', fontsize=25, fontname="Baskerville Old Face")
+    plt.bar(x, y, color='orange', edgecolor='black')
     plt.xticks(rotation=45)
-    plt.xlabel('Days Since Registration')
-    plt.ylabel('Points Earned')
+    plt.xlabel('Days Since Registration', fontsize=15, fontname="Baskerville Old Face")
+    plt.ylabel('Points Earned', fontsize=15, fontname="Baskerville Old Face")
+    plt.tight_layout()
+    graph = get_graph()
+    return graph
+
+def get_plot_for_each_quiz_score(x, y):
+    plt.switch_backend('AGG')
+    plt.figure(figsize=(10, 5))
+    plt.title('Points earned from each quiz', fontsize=25, fontname="Baskerville Old Face")
+    plt.scatter(x, y, c='orange')
+    plt.xticks(rotation=45)
+    plt.xlabel('Quizzes', fontsize=15, fontname="Baskerville Old Face")
+    plt.ylabel('Points earned', fontsize=15, fontname="Baskerville Old Face")
     plt.tight_layout()
     plt.grid(True)
     graph = get_graph()
