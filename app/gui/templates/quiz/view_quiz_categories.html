@@ -1,18 +1,24 @@
-{% extends "quiz/base.html" %} 
+{% extends "quiz/base.html" %}
+
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
-  <h1>Quiz Categories</h1>
-  <ul>
+  {% include "quiz/header.html" %}
+  <main>
+    <h1>Quiz Categories</h1>
+    <ul class="category-list">
       {% for category in categories %}
-        <li><a href="{% url 'quizzes_by_category' category=category.category %}">{{ category.category }}</a></li>
-      {% comment %} {% elif '/create/delete_category' in request.path %}
-          <li><a href="{% url 'delete_category.html' category=category_id %}">{{ category.category }}</a></li> 
-      {% endif %} {% endcomment %}
+        <li class="category-item">
+          <a href="{% url 'quizzes_by_category' category=category.category %}" class="category-link">{{ category.category }}</a>
+          <br>
+          <br>
+          <a href="{% url 'delete_category' category_id=category.id %}" class="button delete-button">Delete</a>
+          <br>
+          <br>
+        </li>
       {% endfor %}
-  </ul>
-</main>
+    </ul>
+  </main>
 {% endblock %}
+
 
 {% comment %} {% extends "question/base.html" %} {% block content %} 
 {% include "question/header.html" %}

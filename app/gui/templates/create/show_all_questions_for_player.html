@@ -1,0 +1,10 @@
+{% extends "quiz/base.html" %} 
+{% block content %}
+{% include "quiz/header.html" %}
+<main>
+    {% for question in questions %}
+        <h2>{{ question.question }}</h2>
+        <a href="{% url 'edit_question' question_id=question.id %}" class="button" >Edit</a>
+    {% endfor %}
+</main>
+{% endblock %}

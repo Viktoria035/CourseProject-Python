@@ -34,10 +34,15 @@ class Category(models.Model):
 
     category = models.CharField(verbose_name=_("Category"), max_length=100, unique=True, null=True)
     player = models.ForeignKey(Player, verbose_name=_("Player"), on_delete=models.CASCADE, null=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
+    
+    def get_not_deleted_instances():
+        not_deleted_instances = Category.objects.filter(is_deleted=False)
+        return not_deleted_instances
 
     def __str__(self):
         return self.category
@@ -95,6 +100,8 @@ class Question(models.Model):
     def __str__(self):
         return self.question
     
+    def questions_for_player_in_quiz(player_instance):
+        return list(Question.objects.filter(quiz__player=player_instance, quiz__category__is_deleted=False))
     # def get_answers(self):
     #     return self.answer_set.all() # we reverse reletionship to get all answers for a question, we can do this because we have a foreign key in the answer model
 
@@ -106,6 +113,9 @@ class Answer(models.Model):
     points = models.IntegerField(default=1)
     is_correct = models.BooleanField(default=False)
     # player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
+
+    def answers_for_player_in_quiz(player_instance):
+        return list(Answer.objects.filter(question__quiz__player=player_instance, question__quiz__category__is_deleted=False))
 
     def __str__(self):
         return f"{self.answer} - {self.points}"

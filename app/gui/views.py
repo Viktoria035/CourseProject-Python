@@ -89,7 +89,7 @@ def not_found(request):
 def view_quiz_categories(request):
     """View quiz categories."""
 
-    categories = Category.objects.all()
+    categories = Category.get_not_deleted_instances()
     if categories is None:
         return redirect('not_found')
     
@@ -288,6 +288,7 @@ def view_statistics(request):
 @login_required(login_url='/login')
 def view_statistics_for_per_player(request):
     """View statistics for per player page."""
+
     player = Player.objects.get(user=request.user)
     points_per_days = PointsPerDay.objects.filter(player=player)
     days = [points_per_day.date for points_per_day in points_per_days]
@@ -301,6 +302,7 @@ def view_statistics_for_per_player(request):
 @login_required(login_url='/login')
 def view_statistics_for_each_quiz_score(request):
     """View statistics for each quiz score page."""
+
     quiz_attemps = QuizAttempt.objects.all()
     quizzes = [quiz_attempt.quiz.title for quiz_attempt in quiz_attemps]
     scores = [quiz_attempt.score for quiz_attempt in quiz_attemps]
@@ -389,6 +391,7 @@ def create_question(request):
 @login_required(login_url='/login')
 def create_answer(request):
     """Create answer page."""
+
     form = AnswerForm()
     if request.method == 'POST':
         form = AnswerForm(request.POST)
@@ -426,6 +429,7 @@ def forum_page(request):
 @login_required(login_url='/login')
 def add_in_forum(request):
     """Add in forum page."""
+
     form = CreateInForumForm()
     if request.method == 'POST':
         form = CreateInForumForm(request.POST)
@@ -441,6 +445,7 @@ def add_in_forum(request):
 @login_required(login_url='/login')
 def add_in_discussion(request):
     """Add in discussion page."""
+
     form = CreateInDiscussionForm()
     if request.method == 'POST':
         form = CreateInDiscussionForm(request.POST)
@@ -460,33 +465,100 @@ def edit(request):
     return render(request, 'create/edit.html')
 
 @login_required(login_url='/login')
-def edit_quiz(request):
+def edit_quiz(request, quiz_id, category):
     """Edit quiz page."""
 
-    pass
+    if category == None or quiz_id == None:
+        return redirect('not_found')
+    
+    if request.method == "GET":
+        form = QuizForm(instance=Quiz.objects.get(id=quiz_id))
+        return render(request, 'create/edit_quiz.html', {'form': form})
+    if request.method == "POST":
+        form = QuizForm(request.POST, instance=Quiz.objects.get(id=quiz_id))
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Quiz updated successfully!')
+            return redirect('quizzes_by_category', category=category)
+        else:
+            messages.error(request, 'Invalid form!')
+            return redirect('edit_quiz', quiz_id=quiz_id, category=category)
 
 @login_required(login_url='/login')
-def edit_question(request):
+def show_all_questions_for_player(request):
+    """Show all questions for player page."""
+
+    player = Player.objects.get(user=request.user)
+    questions = Question.questions_for_player_in_quiz(player_instance=player)
+    context = {
+        'questions': questions
+    }
+    return render(request, 'create/show_all_questions_for_player.html', context=context)
+    
+
+@login_required(login_url='/login')
+def edit_question(request, question_id):
     """Edit question page."""
 
-    pass
+    if question_id == None:
+        return redirect('not_found')
+    
+    if request.method == "GET":
+        form = QuestionForm(instance=Question.objects.get(id=question_id))
+        return render(request, 'create/edit_question.html', {'form': form})
+    if request.method == "POST":
+        form = QuestionForm(request.POST, instance=Question.objects.get(id=question_id))
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Question updated successfully!')
+            return redirect('show_all_questions_for_player')
+        else:
+            messages.error(request, 'Invalid form!')
+            return redirect('edit_question', question_id=question_id)
 
 @login_required(login_url='/login')
-def edit_answer(request):
+def show_all_answers_for_player(request):
+    """Show all answers for player page."""
+
+    player = Player.objects.get(user=request.user)
+    answers = Answer.answers_for_player_in_quiz(player_instance=player)
+    print(answers)
+    context = {
+        'answers': answers
+    }
+    return render(request, 'create/show_all_answers_for_player.html', context=context)
+
+@login_required(login_url='/login')
+def edit_answer(request, answer_id):
     """Edit answer page."""
 
-    pass
+    if answer_id == None:
+        return redirect('not_found')
+    
+    if request.method == "GET":
+        form = AnswerForm(instance=Answer.objects.get(id=answer_id))
+        return render(request, 'create/edit_answer.html', {'form': form})
+    if request.method == "POST":
+        form = AnswerForm(request.POST, instance=Answer.objects.get(id=answer_id))
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Answer updated successfully!')
+            return redirect('show_all_answers_for_player')
+        else:
+            messages.error(request, 'Invalid form!')
+            return redirect('edit_answer', answer_id=answer_id)
 
 @login_required(login_url='/login')
 def delete_category(request, category_id):
-    """Edit category page."""
-
-    category = get_object_or_404(Category, id=category_id)
-
-    if request.user == category.player.user:
-        category.delete()
+    """Delete category page."""
+    player = Player.objects.get(user=request.user)
+    category = Category.objects.get(id=category_id)
+    
+    if player == category.player:
+        category.is_deleted = True
+        category.save()
         messages.success(request, 'Category deleted successfully!')
         return redirect('quiz_categories')
     else:
         messages.error(request, 'You are not authorized to delete this category!')
-        return redirect('delete_category', category_id=category_id)
+        return redirect('quiz_categories')

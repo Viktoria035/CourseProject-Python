@@ -5,10 +5,8 @@
     <h1>Edit your own quiz</h1>
     <br>
     <ul>
-        <li><a href="{% url 'delete_category' category_id=category_id %}">Delete a category</a></li>
-        <li><a href="{% url 'edit_quiz' %}">Edit a quiz</a></li>
-        <li><a href="{% url 'edit_question' %}">Edit a question</a></li>
-        <li><a href="{% url 'edit' %}">Edit an answer</a></li>
+        <li><a href="{% url 'show_all_questions_for_player' %}">Edit a question</a></li>
+        <li><a href="{% url 'show_all_answers_for_player' %}">Edit an answer</a></li>
     </ul>
 </main>
 {% endblock %}
