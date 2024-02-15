@@ -2,6 +2,8 @@
 from gui.models import Player, PointsPerDay
 from collections import defaultdict
 import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
 
 def get_player_rank_in_leaderboard(player: Player):
     leaderboard = Player.objects.all().order_by('-score')
@@ -30,38 +32,62 @@ def change_player_level_by_score(player: Player):
     elif player.score >= 100:
         player.level = 'Master'
 
-def get_registration_date(player: Player):
-    return player.registration_date
+# def get_registration_date(player: Player):
+#     return player.registration_date
 
-def get_points_per_date_for_player(player: Player):
-    points_per_day_res = {}
-    points_per_days = PointsPerDay.objects.filter(player=player)
-    for points_per_day in points_per_days:
-        points_per_day_res[points_per_day.date] = points_per_day.points
-    return points_per_day_res
+# def get_points_per_date_for_player(player: Player):
+#     points_per_day_res = {}
+#     points_per_days = PointsPerDay.objects.filter(player=player)
+#     for points_per_day in points_per_days:
+#         points_per_day_res[points_per_day.date] = points_per_day.points
+#     return points_per_day_res
 
-def get_points_per_date_for_all_players():
-    players = Player.objects.all()
-    points_per_user_per_day = defaultdict(dict)
-    for player in players:
-        reg_date = get_registration_date(player)
-        points_per_day = get_points_per_date_for_player(player)
-        for day, points in points_per_day.items():
-            days_since_registration = (day - reg_date).days
-            points_per_user_per_day[player.user.username][days_since_registration] = points
-    return points_per_user_per_day
+# def get_points_per_date_for_all_players():
+#     players = Player.objects.all()
+#     points_per_user_per_day = defaultdict(dict)
+#     for player in players:
+#         reg_date = get_registration_date(player)
+#         points_per_day = get_points_per_date_for_player(player)
+#         for day, points in points_per_day.items():
+#             days_since_registration = (day - reg_date).days
+#             points_per_user_per_day[player.user.username][days_since_registration] = points
+#     return points_per_user_per_day
 
-def get_schedule_for_per_player():
-    points_per_user_per_day = get_points_per_date_for_all_players()
-    for username, points_per_day in points_per_user_per_day.items():
-        sorted_days = sorted(points_per_day.keys())
-        sorted_points = [points_per_day[day] for day in sorted_days]
-        plt.plot(sorted_days, sorted_points, label=username)
+# def get_schedule_for_per_player():
+#     points_per_user_per_day = get_points_per_date_for_all_players()
+#     for username, points_per_day in points_per_user_per_day.items():
+#         sorted_days = sorted(points_per_day.keys())
+#         sorted_points = [points_per_day[day] for day in sorted_days]
+#         plt.plot(sorted_days, sorted_points, label=username)
 
+#     plt.xlabel('Days Since Registration')
+#     plt.ylabel('Points Earned')
+#     plt.title('Points Earned per Day Since Registration')
+#     plt.legend()
+#     plt.grid(True)
+
+#     plt.show()
+
+
+def get_graph():
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    graph = base64.b64encode(image_png)
+    graph = graph.decode('utf-8')
+    buffer.close()
+    return graph
+
+def get_plot(x, y):
+    plt.switch_backend('AGG')
+    plt.figure(figsize=(10, 5))
+    plt.title('Points Earned per Day Since Registration')
+    plt.plot(x, y)
+    plt.xticks(rotation=45)
     plt.xlabel('Days Since Registration')
     plt.ylabel('Points Earned')
-    plt.title('Points Earned per Day Since Registration')
-    plt.legend()
+    plt.tight_layout()
     plt.grid(True)
-
-    plt.show()
+    graph = get_graph()
+    return graph

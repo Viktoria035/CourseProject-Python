@@ -1,0 +1,10 @@
+{% extends "quiz/base.html" %} 
+{% block content %}
+{% include "quiz/header.html" %}
+<main>
+    <h1>Points Earned per Day Since Registration</h1>
+    {% if chart %}
+        <img src="data:image/png;base64, {{chart|safe}}">
+    {% endif %}
+</main>
+{% endblock %}

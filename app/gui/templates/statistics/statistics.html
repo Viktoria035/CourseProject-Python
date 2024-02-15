@@ -1,0 +1,11 @@
+{% extends "quiz/base.html" %} 
+{% block content %}
+{% include "quiz/header.html" %}
+<main>
+    <h1>All types of statistics</h1>
+    <br>
+    <ul>
+        <li><a href="{% url 'statistics_for_per_player' %}">For you</a></li>
+    </ul>
+</main>
+{% endblock %}

@@ -4,7 +4,7 @@ from django.http.response import HttpResponse as HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
-from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard
+from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard, get_plot
 from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, Forum, Discussion, PointsPerDay, QUESTION_TYPES
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
@@ -278,6 +278,32 @@ def results(request, quiz_id):
     player.active_attempt = None
     player.save()
     return render(request, 'quiz/result.html', context=context)
+
+@login_required(login_url='/login')
+def view_statistics(request):
+    """View statistics page."""
+
+    # player = Player.objects.get(user=request.user)
+    # change_player_level_by_score(player=player)
+    # get_player_rank_in_leaderboard(player=player)
+    # context = {
+    #     'player': player,
+    #     'points_per_day': PointsPerDay.objects.filter(player=player).all()
+    # }
+    return render(request, 'statistics/statistics.html')
+
+@login_required(login_url='/login')
+def view_statistics_for_per_player(request):
+    """View statistics for per player page."""
+    player = Player.objects.get(user=request.user)
+    points_per_days = PointsPerDay.objects.filter(player=player)
+    days = [points_per_day.date for points_per_day in points_per_days]
+    points = [points_per_day.points for points_per_day in points_per_days]
+    chart = get_plot(days, points)
+    context = {
+        'chart': chart
+    }
+    return render(request, 'statistics/statistics_for_per_player.html', context=context)
 
 @login_required(login_url='/login')
 def create_edit_page(request):
