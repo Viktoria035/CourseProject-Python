@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 from django.core.validators import MaxValueValidator
 import re
+from datetime import date
 # Create your models here.
 
 DIFF_CHOICES = (
@@ -23,6 +24,7 @@ class Player(models.Model):
     rank = models.IntegerField(default=0)
     level = models.CharField(max_length=200, default='Beginner')
     active_attempt = models.ForeignKey('QuizAttempt', on_delete=models.CASCADE, null=True, blank=True)
+    registration_date = models.DateField(default=date.today)
 
     def __str__(self):
         return self.user.username
@@ -153,8 +155,17 @@ class QuizAttempt(models.Model):
     responses = models.ManyToManyField(QuestionResponse)
 
     def __str__(self):
-        return f"{self.player.user.username} - {self.quiz.title}"
+        return f" - {self.quiz.title}"
     
+
+class PointsPerDay(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    date = models.DateField(default=date.today)
+    points = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.player.user.username} - {self.date}"
+
 
 class Forum(models.Model):
     player_name = models.CharField(max_length=200, default='Anonymous')

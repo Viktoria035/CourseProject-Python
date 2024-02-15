@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard
-from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, Forum, Discussion ,QUESTION_TYPES
+from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, Forum, Discussion, PointsPerDay, QUESTION_TYPES
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm, CreateInForumForm, CreateInDiscussionForm
+from datetime import date
 
 def index(request):
     """Welcome page."""
@@ -43,7 +44,7 @@ def register(request):
             try:
                 user = User.objects.create_user(username, email, password);
                 user.save()
-                Player(user=user).save()
+                Player(user=user, registration_date=date.today()).save()
                 messages.success(request, 'Account created')
                 return redirect('login')
             except IntegrityError:
@@ -268,6 +269,12 @@ def results(request, quiz_id):
     }
     
     player.score += player.active_attempt.score
+    try:
+        points_today = PointsPerDay.objects.get(player=player, date=date.today())
+    except PointsPerDay.DoesNotExist:
+        points_today = PointsPerDay.objects.create(player=player, date=date.today())
+    points_today.points += player.active_attempt.score
+    points_today.save()
     player.active_attempt = None
     player.save()
     return render(request, 'quiz/result.html', context=context)
