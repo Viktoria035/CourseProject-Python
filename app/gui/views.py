@@ -379,7 +379,18 @@ def create_question(request):
 
     form = QuestionForm()
     if request.method == 'POST':
-        form = QuestionForm(request.POST)
+        quiz = Quiz.objects.get(id=request.POST.get('quiz'))
+        question = request.POST.get('question')
+        question_type = request.POST.get('question_type')
+        player = Player.objects.get(user=request.user)
+        if quiz.player != player:
+            messages.error(request, 'You are not authorized to add question to this quiz!')
+            return redirect('create_question')
+        form = QuestionForm({
+            'quiz': quiz,
+            'question': question,
+            'question_type': question_type
+        })
         if form.is_valid():
             form.save()
             messages.success(request, 'Question/s was/were successfully added. Continue with adding answer/s!')
@@ -398,7 +409,20 @@ def create_answer(request):
 
     form = AnswerForm()
     if request.method == 'POST':
-        form = AnswerForm(request.POST)
+        question = Question.objects.get(id=request.POST.get('question'))
+        answer = request.POST.get('answer')
+        points = request.POST.get('points')
+        is_correct = request.POST.get('is_correct')
+        player = Player.objects.get(user=request.user)
+        if question.quiz.player != player:
+            messages.error(request, 'You are not authorized to add answer to this question!')
+            return redirect('create_answer')
+        form = AnswerForm({
+            'question': question,
+            'answer': answer,
+            'points': points,
+            'is_correct': is_correct
+        })
         if form.is_valid():
             form.save()
             messages.success(request, 'Answer/s was/were successfully added.')
