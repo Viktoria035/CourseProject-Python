@@ -11,7 +11,7 @@ from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm, CreateInFor
 from datetime import date
 
 def index(request):
-    """Welcome page."""
+    """Welcome page. Displays the user characteristics if logged in."""
 
     context = {}
     if request.user.is_authenticated:
@@ -28,7 +28,7 @@ def index(request):
     return render(request, 'quiz/index.html', context)
 
 def register(request):
-    """Register page."""
+    """Register page. Registration with username, email and password."""
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -52,15 +52,9 @@ def register(request):
 
 @login_required(login_url='/login')
 def rules(request):
-    """Rules page."""
+    """The quiz rules."""
 
     return render(request, 'quiz/rules.html')
-
-@login_required(login_url='/login')
-def question(request):
-    """Question page."""
-
-    return render(request, 'quiz/question.html')
 
 @login_required(login_url='/login')
 def leaderboard(request):
@@ -82,11 +76,12 @@ def not_found(request):
 
 @login_required(login_url='/login')
 def view_quiz_categories(request):
-    """View quiz categories."""
+    """All quiz categories."""
 
     categories = Category.get_not_deleted_instances()
 
     if not categories.exists():
+        messages.warning(request, 'No existing categories.')
         return redirect('not_found')
     
     context = {
@@ -96,11 +91,12 @@ def view_quiz_categories(request):
 
 @login_required(login_url='/login')
 def view_quizzes_by_category(request, category):
-    """View quizzes by category."""
+    """All quizzes of the category."""
 
     try:
         quizzes = Quiz.objects.filter(category=Category.objects.get(category=category)).all()
     except Category.DoesNotExist:
+        messages.warning(request, 'No existing quizzes for this category.')
         return redirect('not_found')
     
     context = {
@@ -111,10 +107,12 @@ def view_quizzes_by_category(request, category):
 
 @login_required(login_url='/login')
 def view_quiz(request, quiz_id):
-    """View quiz."""
+    """Show quiz and start the game. A response is received from the user and a QuizAttempt object is created to save current information of the game, 
+    then we redirect to the next question(if one exists), which can be one choice or multiple choice, depending on the type of question."""
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
     if quiz is None:
+        messages.error(request, 'Quiz does not exists.')
         return redirect('not_found')
     
     if request.method == 'POST':
@@ -140,7 +138,7 @@ def view_quiz(request, quiz_id):
 
 @login_required(login_url='\login')
 def view_single_choice_question(request, quiz_id, question_id):
-    """View single choice question."""
+    """Single choice question has only one correct answer, if the user answers correctly the points are added to his profile."""
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
@@ -190,7 +188,8 @@ def view_single_choice_question(request, quiz_id, question_id):
 
 @login_required(login_url='/login')
 def view_multiple_choice_question(request, quiz_id, question_id):
-    """View multiple choice question."""
+    """Multiple choice question may has more than one correct answer, for every correct answer 
+    given from the user the points are added to his profile."""
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
@@ -240,7 +239,7 @@ def view_multiple_choice_question(request, quiz_id, question_id):
 
 @login_required(login_url='/login')
 def results(request, quiz_id):
-    """Results page."""
+    """Function that displays the results after a game(quiz title, questions, answers, correct answers for each question and the given ones from the user)."""
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
     try:
@@ -289,7 +288,7 @@ def view_statistics(request):
 
 @login_required(login_url='/login')
 def view_statistics_for_per_player(request):
-    """View statistics for per player page."""
+    """Statistic on points earned after the registration of the user in the server so far."""
 
     try:
         player = Player.objects.get(user=request.user)
@@ -306,7 +305,7 @@ def view_statistics_for_per_player(request):
 
 @login_required(login_url='/login')
 def view_statistics_for_each_quiz_score(request):
-    """View statistics for each quiz score page."""
+    """Statistic on points earned from the quiz attempts of the users for each quiz."""
 
     quiz_attemps = QuizAttempt.objects.all()
     quizzes = [quiz_attempt.quiz.title for quiz_attempt in quiz_attemps]
@@ -511,7 +510,7 @@ def add_in_discussion(request):
 
 @login_required(login_url='/login')
 def edit(request):
-    """Edit category page."""
+    """Edit page."""
 
     return render(request, 'create/edit.html')
 
@@ -544,7 +543,7 @@ def edit_quiz(request, quiz_id, category):
 
 @login_required(login_url='/login')
 def show_all_questions_for_player(request):
-    """Show all questions for player page."""
+    """Show all created questions from the user."""
 
     try:
         player = Player.objects.get(user=request.user)
@@ -582,7 +581,7 @@ def edit_question(request, question_id):
 
 @login_required(login_url='/login')
 def show_all_answers_for_player(request):
-    """Show all answers for player page."""
+    """Show all created answers from the user."""
 
     try:
         player = Player.objects.get(user=request.user)

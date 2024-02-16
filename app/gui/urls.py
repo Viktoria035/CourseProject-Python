@@ -10,7 +10,6 @@ urlpatterns = [
     path('register', views.register, name='register'),
     path('reset/',include('django.contrib.auth.urls')),
     path('rules', views.rules, name='rules'),
-    path('question', views.question, name='question'),
     path('leaderboard', views.leaderboard, name='leaderboard'),
     path('not_found', views.not_found, name='not_found'),
     path('quiz_categories', views.view_quiz_categories, name='quiz_categories'),
