@@ -54,7 +54,7 @@ class MultiplayerQuizGame(WebsocketConsumer):
                 self.room_group_name,{
                     'action' : 'question',
                     'game_status' : 'running',
-                    'qustion' : self.question
+                    'payload' : self.question
                 }
             )
         elif payload['action'] == 'submit_answer':

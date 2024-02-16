@@ -47,7 +47,8 @@ def get_graph():
     return graph
 
 def get_plot_for_per_player_since_registration(x, y):
-    plt.switch_backend('AGG')  # switches the backend of matplotlib to 'AGG', which is a non-interactive backend that is often used when generating plots without displaying them directly    plt.figure(figsize=(10, 5))
+    plt.switch_backend('AGG')  # switches the backend of matplotlib to 'AGG', which is a non-interactive backend that is often used when generating plots without displaying them directly
+    plt.figure(figsize=(10, 5))  # creates a new figure with a width of 10 inches and a height of 5 inches
     plt.title('Points Earned per Day Since Registration', fontsize=25, fontname="Baskerville Old Face")
     plt.bar(x, y, color='orange', edgecolor='black')
     plt.xticks(rotation=45)

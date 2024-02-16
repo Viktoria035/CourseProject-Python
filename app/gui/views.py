@@ -508,9 +508,14 @@ def add_in_discussion(request):
     if request.method == 'POST':
         form = CreateInDiscussionForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Discussion was successfully added.')
-            return redirect(request.path)
+            forum = form.cleaned_data['forum'] # we are retrieving the cleaned value for the 'forum' field from the submitted form data
+            if not forum.is_deleted:
+                form.save()
+                messages.success(request, 'Discussion was successfully added.')
+                return redirect(request.path)
+            else:
+                messages.error(request, 'Cannot add discussion to a deleted forum!')
+                return redirect('add_in_discussion')
     context = {
         'form': form
     }
