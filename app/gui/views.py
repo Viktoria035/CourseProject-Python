@@ -3,12 +3,13 @@ from django.http import Http404
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard, get_plot_for_per_player_since_registration, get_plot_for_each_quiz_score
-from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, Forum, Discussion, PointsPerDay, QUESTION_TYPES
+from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, Forum, Discussion, PointsPerDay, QUESTION_TYPES, MultiPlayerSession
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm, CreateInForumForm, CreateInDiscussionForm
 from datetime import date
+
 
 def index(request):
     """Welcome page. Displays the user characteristics if logged in."""
@@ -111,11 +112,13 @@ def view_quiz(request, quiz_id):
     then we redirect to the next question(if one exists), which can be one choice or multiple choice, depending on the type of question."""
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
+    player = Player.objects.get(user=request.user)
+
     if quiz is None:
         messages.error(request, 'Quiz does not exists.')
         return redirect('not_found')
     
-    if request.method == 'POST':
+    if request.method == 'POST' and request.POST.get('start-quiz'):
         question = Question.objects.filter(quiz=quiz).first()
         if question is None:
             messages.warning(request, 'There are no questions in this quiz!')
@@ -123,7 +126,6 @@ def view_quiz(request, quiz_id):
 
         quiz_attempt = QuizAttempt(quiz=quiz)
         quiz_attempt.save()
-        player = Player.objects.get(user=request.user)
         player.active_attempt = quiz_attempt
         player.save()
         
@@ -131,10 +133,16 @@ def view_quiz(request, quiz_id):
             return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=question.id)
         elif question.question_type == 'multiple choice':
             return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=question.id)
+    elif request.method == 'POST' and request.data.get('create-room'):
+        multiplayer = MultiPlayerSession(room_code=request.data.get('room-name'), quiz=quiz, creater=player)
+        multiplayer.save()
+        return redirect('multiplayer', room_code=multiplayer.room_code)
+
     context = {
         'quiz': quiz
     }
     return render(request, 'quiz/view_quiz.html', context=context)
+
 
 @login_required(login_url='\login')
 def view_single_choice_question(request, quiz_id, question_id):
@@ -637,3 +645,15 @@ def delete_category(request, category_id):
         else:
             messages.error(request, 'You are not authorized to delete this category!')
         return redirect('quiz_categories')
+
+@login_required(login_url='/login')
+def view_multiplayer(request, room_code):
+    """Joins user to multiplayer game room."""
+    username = request.GET.get('username')
+    multiplayer = MultiPlayerSession.objects.get(room_code=room_code)
+
+    if multiplayer is None:
+        return redirect('not_found')
+    
+    context = {'room_code' : room_code , 'username' : username}
+    return render(request, 'quiz/multiplayer.html' , context)

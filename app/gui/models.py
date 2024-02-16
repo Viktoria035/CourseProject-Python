@@ -177,3 +177,12 @@ class Discussion(models.Model):
 
     def __str__(self):
         return self.forum.topic
+
+
+class MultiPlayerSession(models.Model):
+    room_code = models.CharField(max_length=100, primary_key=True)
+    creater = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='creater')
+    players = models.ManyToManyField(Player, related_name='game_players')
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    ended = models.BooleanField(default=False)
+    current_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)

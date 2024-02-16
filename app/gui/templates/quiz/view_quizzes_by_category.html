@@ -5,7 +5,7 @@
     <h1>Quizzes with {{ category }}</h1>
     <ul>
         {% for quiz in quizzes %}
-            <li><a href="{% url 'view_quiz' quiz_id=quiz.id %}">{{ quiz.title }}</a></li>
+            <li><a style="font-size: 4rem;" href="{% url 'view_quiz' quiz_id=quiz.id %}">{{ quiz.title }}</a></li>
             <br>
             <br>
             <a href="{% url 'edit_quiz' quiz_id=quiz.id category=category %}" class="button quiz_edit-button">Edit</a>

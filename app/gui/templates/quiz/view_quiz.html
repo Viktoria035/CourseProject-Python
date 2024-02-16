@@ -9,7 +9,15 @@
 
     <form method="POST">
         {% csrf_token %}
-        <input type="submit" value="Start Quiz">
+        <p>Play alone</p>
+        <input type="submit" name="start-quiz" value="Start Quiz">
+    </form>
+
+    <form method="POST">
+        {% csrf_token %}
+        <p>Play with friends</p>
+        <input type="input" name="room-name" placeholder="Game Room Name">
+        <input type="submit" name="create-room" value="Create room">
     </form>
 </main>
 {% endblock %}

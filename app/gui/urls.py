@@ -38,4 +38,5 @@ urlpatterns = [
     path('statistics', views.view_statistics, name='statistics'),
     path('statistics_for_per_player', views.view_statistics_for_per_player, name='statistics_for_per_player'),
     path('statistics_for_each_quiz_score', views.view_statistics_for_each_quiz_score, name='statistics_for_each_quiz_score'),
+    path('multiplayer/<room_code>', views.view_multiplayer, name='multiplayer')
 ]
