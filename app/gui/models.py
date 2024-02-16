@@ -40,6 +40,7 @@ class Category(models.Model):
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
     
+    @staticmethod
     def get_not_deleted_instances():
         not_deleted_instances = Category.objects.filter(is_deleted=False)
         return not_deleted_instances

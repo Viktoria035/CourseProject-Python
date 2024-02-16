@@ -1,17 +1,12 @@
-from typing import Any
-from django.http import HttpRequest
 from django.http.response import HttpResponse as HttpResponse
+from django.http import Http404
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login
 from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard, get_plot_for_per_player_since_registration, get_plot_for_each_quiz_score
 from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, Forum, Discussion, PointsPerDay, QUESTION_TYPES
-from django.views.generic import ListView, DetailView
-from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.core.exceptions import PermissionDenied
 from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm, CreateInForumForm, CreateInDiscussionForm
 from datetime import date
 
@@ -90,7 +85,8 @@ def view_quiz_categories(request):
     """View quiz categories."""
 
     categories = Category.get_not_deleted_instances()
-    if categories is None:
+
+    if not categories.exists():
         return redirect('not_found')
     
     context = {
@@ -102,9 +98,9 @@ def view_quiz_categories(request):
 def view_quizzes_by_category(request, category):
     """View quizzes by category."""
 
-    quizzes = Quiz.objects.filter(category=Category.objects.get(category=category)).all()
-    
-    if quizzes is None:
+    try:
+        quizzes = Quiz.objects.filter(category=Category.objects.get(category=category)).all()
+    except Category.DoesNotExist:
         return redirect('not_found')
     
     context = {
@@ -118,7 +114,6 @@ def view_quiz(request, quiz_id):
     """View quiz."""
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
-
     if quiz is None:
         return redirect('not_found')
     
@@ -148,10 +143,11 @@ def view_single_choice_question(request, quiz_id, question_id):
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
-    next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
 
     if quiz is None or question is None:
         return redirect('not_found')
+    
+    next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
     
     if request.method == 'POST':
         answer_response_id = request.POST.get('answer')
@@ -196,10 +192,11 @@ def view_multiple_choice_question(request, quiz_id, question_id):
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
-    next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
 
     if quiz is None or question is None:
         return redirect('not_found')
+    
+    next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
     
     if request.method == 'POST':
         answer_responses_id = request.POST.getlist('answer_responses_id')
@@ -244,12 +241,18 @@ def results(request, quiz_id):
     """Results page."""
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
-    player = Player.objects.get(user=request.user)
+    try:
+        player = Player.objects.get(user=request.user)
+    except Player.DoesNotExist:
+        raise Http404("Player does not exist")
 
     if quiz is None or player.active_attempt is None:
         return redirect('not_found')
     
     questions = Question.objects.filter(quiz=quiz)
+    if not questions.exists():
+        return redirect('not_found')
+    
     context = {
         'quiz': quiz,
         'quiz_attempt': player.active_attempt,
@@ -269,10 +272,7 @@ def results(request, quiz_id):
     }
     
     player.score += player.active_attempt.score
-    try:
-        points_today = PointsPerDay.objects.get(player=player, date=date.today())
-    except PointsPerDay.DoesNotExist:
-        points_today = PointsPerDay.objects.create(player=player, date=date.today())
+    points_today = PointsPerDay.objects.get_or_create(player=player, date=date.today())[0]
     points_today.points += player.active_attempt.score
     points_today.save()
     player.active_attempt = None
@@ -289,7 +289,10 @@ def view_statistics(request):
 def view_statistics_for_per_player(request):
     """View statistics for per player page."""
 
-    player = Player.objects.get(user=request.user)
+    try:
+        player = Player.objects.get(user=request.user)
+    except Player.DoesNotExist:
+        raise Http404("Player does not exist")
     points_per_days = PointsPerDay.objects.filter(player=player)
     days = [points_per_day.date for points_per_day in points_per_days]
     points = [points_per_day.points for points_per_day in points_per_days]
@@ -355,7 +358,10 @@ def create_quiz(request):
         form = QuizForm(request.POST)
         if form.is_valid():
             quiz = form.save(commit=False)
-            quiz.player = Player.objects.get(user=request.user)
+            try:
+                quiz.player = Player.objects.get(user=request.user)
+            except Player.DoesNotExist:
+                raise Http404("Player does not exist")
             quiz.save()
             messages.success(request, 'Quiz was successfully added. Continue with adding question/s!')
             return redirect(request.path)
@@ -375,9 +381,7 @@ def create_question(request):
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
-            question = form.save(commit=False)
-            question.player = Player.objects.get(user=request.user)
-            question.save()
+            form.save()
             messages.success(request, 'Question/s was/were successfully added. Continue with adding answer/s!')
             return redirect(request.path)
         else:
@@ -396,9 +400,7 @@ def create_answer(request):
     if request.method == 'POST':
         form = AnswerForm(request.POST)
         if form.is_valid():
-            answer = form.save(commit=False)
-            answer.player = Player.objects.get(user=request.user)
-            answer.save()
+            form.save()
             messages.success(request, 'Answer/s was/were successfully added.')
             return redirect(request.path)
         else:
@@ -429,8 +431,15 @@ def forum_page(request):
 @login_required(login_url='/login')
 def delete_forum_page(request, forum_id):
     """Delete forum page."""
-    player = Player.objects.get(user=request.user)
-    forum = Forum.objects.get(id=forum_id)
+
+    try:
+        player = Player.objects.get(user=request.user)
+        forum = Forum.objects.get(id=forum_id) # not sure about that
+    except Player.DoesNotExist:
+        raise Http404("Player does not exist")
+    except Forum.DoesNotExist:
+        messages.error(request, 'Forum does not exist!')
+        return redirect('forum_page')
 
     if player == forum.player:
         forum.is_deleted = True
@@ -487,11 +496,18 @@ def edit_quiz(request, quiz_id, category):
     if category == None or quiz_id == None:
         return redirect('not_found')
     
+    player = Player.objects.get(user=request.user)
+    quiz = Quiz.objects.get(id=quiz_id)
+
+    if player != quiz.player:
+        messages.error(request, 'You are not authorized to edit this quiz!')
+        return redirect('quizzes_by_category', category=category)
+    
     if request.method == "GET":
-        form = QuizForm(instance=Quiz.objects.get(id=quiz_id))
+        form = QuizForm(instance=quiz)
         return render(request, 'create/edit_quiz.html', {'form': form})
     if request.method == "POST":
-        form = QuizForm(request.POST, instance=Quiz.objects.get(id=quiz_id))
+        form = QuizForm(request.POST, instance=quiz)
         if form.is_valid():
             form.save()
             messages.success(request, 'Quiz updated successfully!')
@@ -504,7 +520,10 @@ def edit_quiz(request, quiz_id, category):
 def show_all_questions_for_player(request):
     """Show all questions for player page."""
 
-    player = Player.objects.get(user=request.user)
+    try:
+        player = Player.objects.get(user=request.user)
+    except Player.DoesNotExist:
+        raise Http404("Player does not exist")
     questions = Question.questions_for_player_in_quiz(player_instance=player)
     context = {
         'questions': questions
@@ -515,15 +534,18 @@ def show_all_questions_for_player(request):
 @login_required(login_url='/login')
 def edit_question(request, question_id):
     """Edit question page."""
-
-    if question_id == None:
-        return redirect('not_found')
     
+    try:
+        question = Question.objects.get(id=question_id)
+    except Question.DoesNotExist:
+        messages.error(request, 'Question does not exist!')
+        return redirect('not_found')
+
     if request.method == "GET":
-        form = QuestionForm(instance=Question.objects.get(id=question_id))
+        form = QuestionForm(instance=question)
         return render(request, 'create/edit_question.html', {'form': form})
     if request.method == "POST":
-        form = QuestionForm(request.POST, instance=Question.objects.get(id=question_id))
+        form = QuestionForm(request.POST, instance=question)
         if form.is_valid():
             form.save()
             messages.success(request, 'Question updated successfully!')
@@ -536,7 +558,10 @@ def edit_question(request, question_id):
 def show_all_answers_for_player(request):
     """Show all answers for player page."""
 
-    player = Player.objects.get(user=request.user)
+    try:
+        player = Player.objects.get(user=request.user)
+    except Player.DoesNotExist:
+        raise Http404("Player does not exist")
     answers = Answer.answers_for_player_in_quiz(player_instance=player)
     context = {
         'answers': answers
@@ -547,14 +572,17 @@ def show_all_answers_for_player(request):
 def edit_answer(request, answer_id):
     """Edit answer page."""
 
-    if answer_id == None:
+    try:
+        answer = Answer.objects.get(id=answer_id)
+    except Answer.DoesNotExist:
+        messages.error(request, 'Answer does not exist!')
         return redirect('not_found')
     
     if request.method == "GET":
-        form = AnswerForm(instance=Answer.objects.get(id=answer_id))
+        form = AnswerForm(instance=answer)
         return render(request, 'create/edit_answer.html', {'form': form})
     if request.method == "POST":
-        form = AnswerForm(request.POST, instance=Answer.objects.get(id=answer_id))
+        form = AnswerForm(request.POST, instance=answer)
         if form.is_valid():
             form.save()
             messages.success(request, 'Answer updated successfully!')
@@ -566,9 +594,16 @@ def edit_answer(request, answer_id):
 @login_required(login_url='/login')
 def delete_category(request, category_id):
     """Delete category page."""
-    player = Player.objects.get(user=request.user)
-    category = Category.objects.get(id=category_id)
-    
+
+    try:
+        player = Player.objects.get(user=request.user)
+        category = Category.objects.get(id=category_id)
+    except Player.DoesNotExist:
+        raise Http404("Player does not exist")
+    except Category.DoesNotExist:
+        messages.error(request, 'Category does not exist!')
+        return redirect('not_found')
+      
     if player == category.player:
         category.is_deleted = True
         category.save()
