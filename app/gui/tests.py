@@ -50,7 +50,7 @@ class PlayerLevelTestCase(TestCase):
 
 class PlayerRankTestCase(TestCase):
     
-    def setUp(self):
+    def set_up(self):
         user1 = User.objects.create(username='user1')
         user2 = User.objects.create(username='user2')
         user3 = User.objects.create(username='user3')
