@@ -120,6 +120,7 @@ def view_quiz(request, quiz_id):
     if request.method == 'POST':
         question = Question.objects.filter(quiz=quiz).first()
         if question is None:
+            messages.warning(request, 'There are no questions in this quiz!')
             return redirect('not_found')
 
         quiz_attempt = QuizAttempt(quiz=quiz)
@@ -145,6 +146,7 @@ def view_single_choice_question(request, quiz_id, question_id):
     question = Question.objects.filter(id=question_id, quiz=quiz).first()
 
     if quiz is None or question is None:
+        messages.error(request, 'Quiz or question does not exist!')
         return redirect('not_found')
     
     next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()

@@ -14,10 +14,11 @@ def get_player_rank_in_leaderboard(player: Player):
             player.rank = rank
             break
         rank += 1
-    return None
 
 def change_player_level_by_score(player: Player):
-    if 0 <= player.score <= 10:
+    if player.score < 0:
+        player.level = 'Noob'
+    elif 0 <= player.score <= 10:
         player.level = 'Beginner'
     elif 10 < player.score <= 20:
         player.level = 'Medium'
@@ -28,7 +29,7 @@ def change_player_level_by_score(player: Player):
     elif 40 < player.score <= 50:
         player.level = 'Impressive'
     elif 50 < player.score <= 60:
-        player.level = 'Fighting for top'
+        player.level = 'Fighting for the top'
     else:
         player.level = 'Master'
 
