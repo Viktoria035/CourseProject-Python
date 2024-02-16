@@ -95,11 +95,11 @@ class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     question_type = models.CharField(max_length=15, choices=QUESTION_TYPES, default='single choice')
-    # player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.question
     
+    @staticmethod
     def questions_for_player_in_quiz(player_instance):
         return list(Question.objects.filter(quiz__player=player_instance, quiz__category__is_deleted=False))
     # def get_answers(self):
@@ -112,8 +112,8 @@ class Answer(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     points = models.IntegerField(default=1)
     is_correct = models.BooleanField(default=False)
-    # player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
 
+    @staticmethod
     def answers_for_player_in_quiz(player_instance):
         return list(Answer.objects.filter(question__quiz__player=player_instance, question__quiz__category__is_deleted=False))
 
@@ -154,11 +154,15 @@ class PointsPerDay(models.Model):
 
 
 class Forum(models.Model):
-    player_name = models.CharField(max_length=200, default='Anonymous')
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
     topic = models.CharField(max_length=300)
     description = models.CharField(max_length=500, blank=True)
-    #link = models.CharField(max_length=200, null=True)
     created = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+
+    @staticmethod
+    def get_not_deleted_forums():
+        return list(Forum.objects.filter(is_deleted=False))
 
     def __str__(self):
         return self.topic

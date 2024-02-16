@@ -28,7 +28,7 @@ class AnswerForm(forms.ModelForm):
 class CreateInForumForm(forms.ModelForm):
     class Meta:
         model = Forum
-        fields = ['player_name', 'topic', 'description']
+        fields = ['topic', 'description']
 
 
 class CreateInDiscussionForm(forms.ModelForm):

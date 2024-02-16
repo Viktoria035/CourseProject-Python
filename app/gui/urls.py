@@ -33,6 +33,7 @@ urlpatterns = [
     path('show_all_answers_for_player', views.show_all_answers_for_player, name='show_all_answers_for_player'),
     path('edit_answer/<answer_id>', views.edit_answer, name='edit_answer'),
     path('forum_page', views.forum_page, name='forum_page'),
+    path('delete_forum_page/<forum_id>', views.delete_forum_page, name='delete_forum_page'),
     path('add_in_forum', views.add_in_forum, name='add_in_forum'),
     path('add_in_discussion', views.add_in_discussion, name='add_in_discussion'),
     path('statistics', views.view_statistics, name='statistics'),

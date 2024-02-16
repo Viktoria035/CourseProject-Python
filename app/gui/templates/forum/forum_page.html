@@ -18,11 +18,12 @@
                 <br>
                 <h5 class="card-title">
                     <h3>{{forum.topic}}</h3></a> 
+                    <a href="{% url 'delete_forum_page' forum_id=forum.id %}" >Delete</a>
                     <div class="card-body container">
                             <p>{{forum.description}}</p>
                         </h5>
                         <hr>
-                        <p> By: {{forum.player_name}}</p>
+                        <p> By: {{forum.player}}</p>
                         <hr>     
                         <h4>Views from other users</h4>
                         {%for discuss in discussions%}

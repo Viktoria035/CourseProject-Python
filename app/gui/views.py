@@ -413,8 +413,8 @@ def create_answer(request):
 def forum_page(request):
     """Forum page."""
 
-    forums = Forum.objects.all()
-    count = forums.count()
+    forums = Forum.get_not_deleted_forums()
+    count = len(forums)
     discussions = []
     for forum in forums:
         discussions.append(Discussion.objects.filter(forum=forum).all())
@@ -427,6 +427,20 @@ def forum_page(request):
     return render(request, 'forum/forum_page.html', context=context)
 
 @login_required(login_url='/login')
+def delete_forum_page(request, forum_id):
+    """Delete forum page."""
+    player = Player.objects.get(user=request.user)
+    forum = Forum.objects.get(id=forum_id)
+
+    if player == forum.player:
+        forum.is_deleted = True
+        forum.save()
+        messages.success(request, 'Forum deleted successfully!')
+    else:
+        messages.error(request, 'You are not authorized to delete this category!')
+    return redirect('forum_page')
+
+@login_required(login_url='/login')
 def add_in_forum(request):
     """Add in forum page."""
 
@@ -434,7 +448,9 @@ def add_in_forum(request):
     if request.method == 'POST':
         form = CreateInForumForm(request.POST)
         if form.is_valid():
-            form.save()
+            forum = form.save(commit=False)
+            forum.player = Player.objects.get(user=request.user)
+            forum.save()
             messages.success(request, 'Forum was successfully added.')
             return redirect(request.path)
     context = {
@@ -522,7 +538,6 @@ def show_all_answers_for_player(request):
 
     player = Player.objects.get(user=request.user)
     answers = Answer.answers_for_player_in_quiz(player_instance=player)
-    print(answers)
     context = {
         'answers': answers
     }
