@@ -459,19 +459,19 @@ def delete_forum_page(request, forum_id):
 
     try:
         player = Player.objects.get(user=request.user)
-        forum = Forum.objects.get(id=forum_id) # not sure about that
+        forum = Forum.objects.get(id=forum_id)
     except Player.DoesNotExist:
         raise Http404("Player does not exist")
     except Forum.DoesNotExist:
         messages.error(request, 'Forum does not exist!')
         return redirect('forum_page')
-
-    if player == forum.player:
-        forum.is_deleted = True
-        forum.save()
-        messages.success(request, 'Forum deleted successfully!')
-    else:
-        messages.error(request, 'You are not authorized to delete this category!')
+    if request.method == 'GET':
+        if player == forum.player:
+            forum.is_deleted = True
+            forum.save()
+            messages.success(request, 'Forum deleted successfully!')
+        else:
+            messages.error(request, 'You are not authorized to delete this category!')
     return redirect('forum_page')
 
 @login_required(login_url='/login')
@@ -628,12 +628,12 @@ def delete_category(request, category_id):
     except Category.DoesNotExist:
         messages.error(request, 'Category does not exist!')
         return redirect('not_found')
-      
-    if player == category.player:
-        category.is_deleted = True
-        category.save()
-        messages.success(request, 'Category deleted successfully!')
-        return redirect('quiz_categories')
-    else:
-        messages.error(request, 'You are not authorized to delete this category!')
+    
+    if request.method == 'GET':
+        if player == category.player:
+            category.is_deleted = True
+            category.save()
+            messages.success(request, 'Category deleted successfully!')
+        else:
+            messages.error(request, 'You are not authorized to delete this category!')
         return redirect('quiz_categories')
