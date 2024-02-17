@@ -660,6 +660,7 @@ def view_multiplayer(request, room_code):
     multiplayer = MultiPlayerSession.objects.get(room_code=room_code)
 
     if multiplayer is None:
+        messages.warning(request, 'Room does not exist!')
         return redirect('not_found')
     
     context = {'room_code' : room_code , 'username' : username}

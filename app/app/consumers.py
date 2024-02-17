@@ -52,16 +52,16 @@ class MultiplayerQuizGame(WebsocketConsumer):
         
     def receive(self , payload):
         """In this function, we have a few different cases.
-        If the action is start_game and the player is the creater, we send the question to the group.
+        If the action is start_game and the player is the creator, we send the question to the group.
         If the action is submit_answer, we save the player's response and check if all players have answered.
         If all players have answered, we send the next question to the group.
         If there are no more questions, we send the results to the group."""
-        
+
         print(payload)
         player = Player.objects.get(user=self.scope['user'])
 
-        if payload['action'] == 'start_game' and player == self.multiplayer.creater:
-            # Creater starts the game
+        if payload['action'] == 'start_game' and player == self.multiplayer.creator:
+            # Creator starts the game
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,{
                     'action' : 'question',

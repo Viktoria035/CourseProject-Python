@@ -15,16 +15,15 @@ DIFF_CHOICES = (
 QUESTION_TYPES = (
     ('single choice', 'Single Choice'),
     ('multiple choice', 'Multiple Choice'),
-    #('true or false', 'True or False'),
 )
 
 class Player(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    score = models.IntegerField(default=0)
-    rank = models.IntegerField(default=0)
-    level = models.CharField(max_length=200, default='Beginner')
-    active_attempt = models.ForeignKey('QuizAttempt', on_delete=models.CASCADE, null=True, blank=True)
-    registration_date = models.DateField(default=date.today)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_("User"))
+    score = models.IntegerField(default=0, verbose_name=_("Score"))
+    rank = models.IntegerField(default=0, verbose_name=_("Rank"))
+    level = models.CharField(max_length=200, default='Beginner', verbose_name=_("Level"))
+    active_attempt = models.ForeignKey('QuizAttempt', on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("Active Attempt"))
+    registration_date = models.DateField(default=date.today, verbose_name=_("Registration Date"))
 
     def __str__(self):
         return self.user.username
@@ -32,9 +31,9 @@ class Player(models.Model):
 
 class Category(models.Model):
 
-    category = models.CharField(verbose_name=_("Category"), max_length=100, unique=True, null=True)
-    player = models.ForeignKey(Player, verbose_name=_("Player"), on_delete=models.CASCADE, null=True)
-    is_deleted = models.BooleanField(default=False)
+    category = models.CharField(max_length=100, unique=True, null=True, verbose_name=_("Category"))
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True, verbose_name=_("Creator"))
+    is_deleted = models.BooleanField(default=False, verbose_name=_("Is Deleted"))
 
     class Meta:
         verbose_name = _("Category")
@@ -51,33 +50,20 @@ class Category(models.Model):
 
 class Quiz(models.Model):
 
-    title = models.CharField(verbose_name=_("Title"), 
-                             max_length=100, blank=False)
+    title = models.CharField(max_length=100, blank=False, verbose_name=_("Title"))
 
-    description = models.TextField(verbose_name=_("Description"), 
-                                   blank=True,
-                                     help_text=_("A brief description of the quiz"))
+    description = models.TextField(blank=True, help_text=_("A brief description of the quiz"), verbose_name=_("Description"))
 
-    difficulty = models.CharField(verbose_name=_("Difficulty"), 
-                                  max_length=6, 
-                                  choices=DIFF_CHOICES, default='easy')
+    difficulty = models.CharField(max_length=6, choices=DIFF_CHOICES, default='easy', verbose_name=_("Difficulty"))
 
-    category = models.ForeignKey(Category, null=True, 
-                                 blank=True, verbose_name=_("Category"), 
-                                 on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("Category"))
     
-    player = models.ForeignKey(Player, verbose_name=_("Player"),
-                               help_text=_("The player who created the quiz."),
-                               on_delete=models.CASCADE, null=True)
+    player = models.ForeignKey(Player,on_delete=models.CASCADE, help_text=_("The player who created the quiz."), verbose_name=_("Player"), null=True)
 
-    max_questions = models.PositiveIntegerField(verbose_name=_("Max Questions"), 
-                                                blank=True, null=True, 
-                                                help_text=_("Number of questions to be answered on each attempt"))
+    max_questions = models.PositiveIntegerField(blank=True, null=True, help_text=_("Number of questions to be answered on each attempt"), verbose_name=_("Max Questions"))
 
-    pass_mark = models.SmallIntegerField(verbose_name=_("Pass Mark"), 
-                                         blank=True, default=0, 
-                                         help_text=_("Percentage required to pass. Leave empty if no pass mark is required"), 
-                                         validators=[MaxValueValidator(100)])
+    pass_mark = models.SmallIntegerField(blank=True, default=0, help_text=_("Percentage required to pass. Leave empty if no pass mark is required"), 
+                                         validators=[MaxValueValidator(100)], verbose_name=_("Pass Mark"))
 
 
     class Meta:
@@ -92,10 +78,10 @@ class Quiz(models.Model):
 
 
 class Question(models.Model):
-    question = models.CharField(max_length=200)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question = models.CharField(max_length=200, verbose_name=_("Question"))
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name=_("Quiz"))
     created = models.DateTimeField(auto_now_add=True)
-    question_type = models.CharField(max_length=15, choices=QUESTION_TYPES, default='single choice')
+    question_type = models.CharField(max_length=15, choices=QUESTION_TYPES, default='single choice', verbose_name=_("Question Type"))
 
     def __str__(self):
         return self.question
@@ -103,16 +89,14 @@ class Question(models.Model):
     @staticmethod
     def questions_for_player_in_quiz(player_instance):
         return list(Question.objects.filter(quiz__player=player_instance, quiz__category__is_deleted=False))
-    # def get_answers(self):
-    #     return self.answer_set.all() # we reverse reletionship to get all answers for a question, we can do this because we have a foreign key in the answer model
 
 
 class Answer(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=200)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name=_("Question"))
+    answer = models.CharField(max_length=200, verbose_name=_("Answer"))
     created = models.DateTimeField(auto_now_add=True)
-    points = models.IntegerField(default=1)
-    is_correct = models.BooleanField(default=False)
+    points = models.IntegerField(default=1, verbose_name=_("Points"))
+    is_correct = models.BooleanField(default=False, verbose_name=_("Is Correct"))
 
     @staticmethod
     def answers_for_player_in_quiz(player_instance):
@@ -123,43 +107,43 @@ class Answer(models.Model):
     
 
 class QuestionResponse(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, verbose_name=_("Player"))
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name=_("Quiz"))
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name=_("Question"))
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, verbose_name=_("Answer"))
     
     def is_correct(self):
         return self.answer.is_correct
 
     def __str__(self):
-        return self.answer
+        return self.answer.answer
 
 
 class QuizAttempt(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name=_("Quiz"))
     date = models.DateTimeField(auto_now_add=True)
-    score = models.IntegerField(default=0)
-    responses = models.ManyToManyField(QuestionResponse)
+    score = models.IntegerField(default=0, verbose_name=_("Score"))
+    responses = models.ManyToManyField(QuestionResponse, verbose_name=_("Responses"))
 
     def __str__(self):
         return f" - {self.quiz.title}"
     
 
 class PointsPerDay(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    date = models.DateField(default=date.today)
-    points = models.IntegerField(default=0)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, verbose_name=_("Player"))
+    date = models.DateField(default=date.today, verbose_name=_("Date"))
+    points = models.IntegerField(default=0, verbose_name=_("Points"))
 
     def __str__(self):
         return f"{self.player.user.username} - {self.date}"
 
 
 class Forum(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True)
-    topic = models.CharField(max_length=300)
-    description = models.CharField(max_length=500, blank=True)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, null=True, verbose_name=_("Player"))
+    topic = models.CharField(max_length=300, verbose_name=_("Topic"))
+    description = models.CharField(max_length=500, blank=True, verbose_name=_("Description"))
     created = models.DateTimeField(auto_now_add=True)
-    is_deleted = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False, verbose_name=_("Is Deleted"))
 
     @staticmethod
     def get_not_deleted_forums():
@@ -172,17 +156,17 @@ class Forum(models.Model):
 class Discussion(models.Model):
     """Child class of Forum that stores views from different users(players)"""
     
-    forum = models.ForeignKey(Forum, on_delete=models.CASCADE)
-    discuss = models.CharField(max_length=500)
+    forum = models.ForeignKey(Forum, on_delete=models.CASCADE, verbose_name=_("Forum"))
+    discuss = models.CharField(max_length=500, verbose_name=_("Discussion"))
 
     def __str__(self):
         return self.forum.topic
 
 
 class MultiPlayerSession(models.Model):
-    room_code = models.CharField(max_length=100, primary_key=True)
-    creater = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='creater')
-    players = models.ManyToManyField(Player, related_name='game_players')
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    ended = models.BooleanField(default=False)
-    current_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
+    room_code = models.CharField(max_length=100, primary_key=True, verbose_name=_("Room Code"))
+    creator = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='creator', verbose_name=_("Creator"), null=True)
+    players = models.ManyToManyField(Player, related_name='game_players', verbose_name=_("Players"))
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name=_("Quiz"))
+    ended = models.BooleanField(default=False, verbose_name=_("Ended"))
+    current_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("Current Question"))
