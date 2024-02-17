@@ -46,27 +46,26 @@ def get_graph():
     buffer.close() # closes the buffer to free up system resources
     return graph
 
-def get_plot_for_per_player_since_registration(x, y):
-    plt.switch_backend('AGG')  # switches the backend of matplotlib to 'AGG', which is a non-interactive backend that is often used when generating plots without displaying them directly
-    plt.figure(figsize=(10, 5))  # creates a new figure with a width of 10 inches and a height of 5 inches
-    plt.title('Points Earned per Day Since Registration', fontsize=25, fontname="Baskerville Old Face")
-    plt.bar(x, y, color='orange', edgecolor='black')
-    plt.xticks(rotation=45)
-    plt.xlabel('Days Since Registration', fontsize=15, fontname="Baskerville Old Face")
-    plt.ylabel('Points Earned', fontsize=15, fontname="Baskerville Old Face")
-    plt.tight_layout()
-    graph = get_graph()
-    return graph
+def plot_decorator(func):
+    def wrapper(x, y, title, x_label, y_label):
+        plt.switch_backend('AGG') # switches the backend of matplotlib to 'AGG', which is a non-interactive backend that is often used when generating plots without displaying them directly
+        plt.figure(figsize=(10, 5)) # creates a new figure with a width of 10 inches and a height of 5 inches
+        plt.title(title, fontsize=25, fontname="Baskerville Old Face")
+        func(x, y)
+        plt.xticks(rotation=45)
+        plt.xlabel(x_label, fontsize=15, fontname="Baskerville Old Face")
+        plt.ylabel(y_label, fontsize=15, fontname="Baskerville Old Face")
+        plt.tight_layout()
+        graph = get_graph()
+        plt.close()
+        return graph
+    return wrapper
 
+@plot_decorator
+def get_plot_for_per_player_since_registration(x, y):
+    plt.bar(x, y, color='orange', edgecolor='black')
+
+@plot_decorator
 def get_plot_for_each_quiz_score(x, y):
-    plt.switch_backend('AGG')
-    plt.figure(figsize=(10, 5))
-    plt.title('Points earned from each quiz', fontsize=25, fontname="Baskerville Old Face")
     plt.scatter(x, y, c='orange')
-    plt.xticks(rotation=45)
-    plt.xlabel('Quizzes', fontsize=15, fontname="Baskerville Old Face")
-    plt.ylabel('Points earned', fontsize=15, fontname="Baskerville Old Face")
-    plt.tight_layout()
     plt.grid(True)
-    graph = get_graph()
-    return graph

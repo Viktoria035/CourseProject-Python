@@ -305,7 +305,8 @@ def view_statistics_for_per_player(request):
     points_per_days = PointsPerDay.objects.filter(player=player)
     days = [points_per_day.date for points_per_day in points_per_days]
     points = [points_per_day.points for points_per_day in points_per_days]
-    chart = get_plot_for_per_player_since_registration(days, points)
+    chart = get_plot_for_per_player_since_registration(days, points, 
+                                                       'Points Earned per Day Since Registration', 'Days Since Registration', 'Points Earned')
     context = {
         'chart': chart
     }
@@ -318,7 +319,8 @@ def view_statistics_for_each_quiz_score(request):
     quiz_attemps = QuizAttempt.objects.all()
     quizzes = [quiz_attempt.quiz.title for quiz_attempt in quiz_attemps]
     scores = [quiz_attempt.score for quiz_attempt in quiz_attemps]
-    chart = get_plot_for_each_quiz_score(quizzes, scores)
+    chart = get_plot_for_each_quiz_score(quizzes, scores, 
+                                        'Points earned from each quiz', 'Quizzes', 'Points Earned')
     context = {
         'chart': chart
     }
