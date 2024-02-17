@@ -8,6 +8,11 @@ from gui.models import MultiPlayerSession, Player, Question, QuizAttempt, Questi
 
 class MultiplayerQuizGame(WebsocketConsumer):
     def connect(self):
+        """In this function, we get the room name from the URL route parameters, 
+        and then we use it to get the MultiPlayerSession object from the database.
+        We also get the first question of the quiz and the room group name. 
+        We then add the user to the group and accept the connection."""
+
         self.room_name = self.scope['url_route']['kwargs']['room_code']
         self.multiplayer = MultiPlayerSession.objects.get(room_code=self.room_name)
         self.question = Question.objects.filter(id=1, quiz=self.multiplayer.quiz).first()
@@ -33,6 +38,7 @@ class MultiplayerQuizGame(WebsocketConsumer):
 
         
     def disconnect(self):
+        """In this function, we remove the user from the group and delete the MultiPlayerSession object if there is only one player left."""
         if len(self.multiplayer.players) <= 1:
             async_to_sync(self.channel_layer.group_discard)(
                 self.room_group_name,
@@ -45,6 +51,12 @@ class MultiplayerQuizGame(WebsocketConsumer):
 
         
     def receive(self , payload):
+        """In this function, we have a few different cases.
+        If the action is start_game and the player is the creater, we send the question to the group.
+        If the action is submit_answer, we save the player's response and check if all players have answered.
+        If all players have answered, we send the next question to the group.
+        If there are no more questions, we send the results to the group."""
+        
         print(payload)
         player = Player.objects.get(user=self.scope['user'])
 
