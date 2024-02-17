@@ -50,7 +50,7 @@ class PlayerLevelTestCase(TestCase):
 
 class PlayerRankTestCase(TestCase):
     
-    def set_up(self):
+    def setUp(self):
         user1 = User.objects.create(username='user1')
         user2 = User.objects.create(username='user2')
         user3 = User.objects.create(username='user3')
@@ -66,7 +66,7 @@ class PlayerRankTestCase(TestCase):
 
     def test_get_rank_first_place(self):
         player = Player.objects.get(score=100)
-        rank = get_player_rank_in_leaderboard(player)
+        get_player_rank_in_leaderboard(player)
         self.assertEqual(player.rank, 1)
 
     def test_get_rank_middle_place(self):
@@ -76,7 +76,7 @@ class PlayerRankTestCase(TestCase):
 
     def test_get_rank_last_place(self):
         player = Player.objects.get(score=20)
-        rank = get_player_rank_in_leaderboard(player)
+        get_player_rank_in_leaderboard(player)
         self.assertEqual(player.rank, 5)
 
     def test_get_rank_with_negative_score(self):
@@ -87,5 +87,5 @@ class PlayerRankTestCase(TestCase):
     def test_player_not_in_leaderboard(self):
         new_user = User.objects.create(username='new_user')
         player = Player.objects.create(user=new_user, score=70)
-        rank = get_player_rank_in_leaderboard(player)
+        get_player_rank_in_leaderboard(player)
         self.assertEqual(player.rank, 3)
