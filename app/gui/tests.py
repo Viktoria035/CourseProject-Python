@@ -71,7 +71,7 @@ class PlayerRankTestCase(TestCase):
 
     def test_get_rank_middle_place(self):
         player = Player.objects.get(score=60)
-        rank = get_player_rank_in_leaderboard(player)
+        get_player_rank_in_leaderboard(player)
         self.assertEqual(player.rank, 3)
 
     def test_get_rank_last_place(self):
