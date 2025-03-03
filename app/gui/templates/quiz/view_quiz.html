@@ -2,20 +2,23 @@
 {% block content %}
 {% include "quiz/header.html" %}
 <main>
-    <h1>Title: {{ quiz.title }}</h1>
-    <h2>Discription: {{ quiz.description }}</h2>
-    <h2>Difficulty: {{ quiz.difficulty }}</h2>
-    <h2>Passing Marks: {{ quiz.pass_mark }}</h2>
+    <ol>
+        <h1 style="font-size: 5rem">Title: {{ quiz.title }}</h1>
+        <br>
+        <h2 style="font-size: 2.5rem" >Discription: {{ quiz.description }}</h2>
+        <h2 style="font-size: 2.5rem">Difficulty: {{ quiz.difficulty }}</h2>
+        <h2 style="font-size: 2.5rem">Passing Marks: {{ quiz.pass_mark }}</h2>
+    </ol>
 
     <form method="POST">
         {% csrf_token %}
-        <p>Play alone</p>
+        <h2>Play alone</h2>
         <input type="submit" name="start-quiz" value="Start Quiz">
     </form>
 
     <form method="POST">
         {% csrf_token %}
-        <p>Play with friends</p>
+        <h2>Play with friends</h2>
         <input type="input" name="room-name" placeholder="Game Room Name">
         <input type="submit" name="create-room" value="Create room">
     </form>

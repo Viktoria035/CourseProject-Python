@@ -3,12 +3,12 @@
 {% block content %}
   {% include "quiz/header.html" %}
   <main>
-    <h1>Quiz Categories</h1>
+    <h1 style="font-size: 3rem">Quiz Categories: </h1>
     <ul class="category-list">
       {% for category in categories %}
         <li class="category-item" style="display: flex; flex-direction: row; gap: 2em; justify-content: space-between;">
-          <a style="font-size: 4em; " href="{% url 'quizzes_by_category' category=category.category %}" class="category-link">{{ category.category }}</a>
-          <a href="{% url 'delete_category' category_id=category.id %}" class="button delete-button">Delete</a>
+          <a style="font-size: 4rem; " href="{% url 'quizzes_by_category' category=category.category %}" class="category-link">{{ category.category }}</a>
+          <a href="{% url 'delete_category' category_id=category.id %}" class="button">Delete</a>
         </li>
       {% endfor %}
     </ul>

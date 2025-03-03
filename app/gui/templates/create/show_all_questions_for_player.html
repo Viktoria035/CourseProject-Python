@@ -3,7 +3,7 @@
 {% include "quiz/header.html" %}
 <main>
     {% for question in questions %}
-        <h2>{{ question.question }}</h2>
+        <h1>{{ question.question }}</h1>
         <a href="{% url 'edit_question' question_id=question.id %}" class="button" >Edit</a>
     {% endfor %}
 </main>

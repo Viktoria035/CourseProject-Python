@@ -3,7 +3,7 @@
 {% include "quiz/header.html" %}
 <main>
     {% for answer in answers %}
-        <h2>{{ answer.answer }}</h2>
+        <h1>{{ answer.answer }}</h1>
         <a href="{% url 'edit_answer' answer_id=answer.id %}" class="button" >Edit</a>
     {% endfor %}
 </main>

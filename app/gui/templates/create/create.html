@@ -2,13 +2,13 @@
 {% block content %}
 {% include "quiz/header.html" %}
 <main>
-    <h1>Create your own quiz</h1>
+    <h1 style="font-size: 3rem">Create your own quiz: </h1>
     <br>
     <ul>
-        <li><a href="{% url 'create_category' %}">Create a category</a></li>
-        <li><a href="{% url 'create_quiz' %}">Create a quiz</a></li>
-        <li><a href="{% url 'create_question' %}">Create a question</a></li>
-        <li><a href="{% url 'create_answer' %}">Create an answer</a></li>
+        <li class="large-icon"><a href="{% url 'create_category' %}" style="font-size: 2.5rem">Create a category</a></li>
+        <li class="large-icon"><a href="{% url 'create_quiz' %}" style="font-size: 2.5rem">Create a quiz</a></li>
+        <li class="large-icon"><a href="{% url 'create_question' %}" style="font-size: 2.5rem">Create a question</a></li>
+        <li class="large-icon"><a href="{% url 'create_answer' %}" style="font-size: 2.5rem">Create an answer</a></li>
     </ul>
 </main>
 {% endblock %}

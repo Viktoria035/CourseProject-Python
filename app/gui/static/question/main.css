@@ -36,14 +36,15 @@ header nav ul {
   width: 50rem;
   list-style: none;
   justify-content: space-between;
-  font-size: 1.6rem;
+  font-size: 3rem;
   font-size: clamp(1rem, 1.4vw, 1.5rem);
 }
 
 a {
   text-decoration: none;
   color: #f68b1e;
-  font-weight: 500;
+  font-weight: 400;
+  font-size: 1.75rem;
 }
 
 a:hover {
@@ -52,7 +53,7 @@ a:hover {
 
 main {
   display: flex;
-  margin: 4rem 0;
+  margin: 5rem 0;
   gap: 6rem;
 }
 
@@ -60,6 +61,7 @@ main .dashboard {
   width: 50%;
   display: flex;
   align-items: center;
+  font-size: large;
 }
 
 main .illustration {
@@ -75,18 +77,19 @@ table {
   background-color: #2f2e41;
   color: #ffffff;
   border-radius: 1.2rem;
-  font-size: clamp(1rem, 1.4vw, 1.5rem);
+  font-size: clamp(2rem, 1.4vw, 2.5rem);
   padding: 1.5rem;
 }
 
 table td,
 th {
-  padding: 1rem;
+  padding: 2rem;
   padding-right: 5rem;
 }
 
 table tr td:first-child {
   font-weight: 500;
+  font-size: large;
   color: #f68b1e;
 }
 
@@ -99,8 +102,8 @@ table tr td:first-child {
   text-align: center;
   color: #2f2e41;
   font-weight: 600;
-  font-size: 3rem;
-  margin-bottom: 4rem;
+  font-size: 5rem;
+  margin-bottom: 3rem;
 }
 
 .rules ul {
@@ -110,7 +113,7 @@ table tr td:first-child {
 }
 
 .rules ul li {
-  font-size: 1.3rem;
+  font-size: large;
   line-height: 2.5;
 }
 
@@ -129,7 +132,19 @@ table tr td:first-child {
 
 .leaderboard table td,
 th {
-  border: 0.1rem solid rgb(75, 75, 134);
+  border: 0.2rem solid rgb(75, 75, 134);
+}
+
+.answer-checkbox {
+  margin-bottom: 0;
+  height: 30px;
+  width: 30px; /* Change the width as needed */
+}
+
+.answer-label {
+  display: inline;
+  margin-left: 5px;
+  font-size: 3rem; /* Change the font size as needed */
 }
 
 .details {
@@ -188,14 +203,14 @@ a.button:focus {
 
 form button,
 a.button {
-  padding: 1.5rem 3.4rem;
+  padding: 1rem 3rem;
   border-radius: 0.8rem;
   border: none;
   background-color: #2f2e41;
   color: #ffffff;
   cursor: pointer;
   font-family: inherit;
-  font-size: 1.4rem;
+  font-size: large;
   outline: 0;
 }
 
@@ -210,8 +225,8 @@ form button:active,
 
 .cred h2 {
   text-align: center;
-  font-size: 2rem;
-  margin-bottom: 4rem;
+  font-size: 3rem;
+  margin-bottom: 5rem;
   color: #2f2e41;
 }
 
@@ -221,9 +236,38 @@ form button:active,
 }
 
 .muted {
-  font-size: 1.5rem;
-  margin-top: 4rem;
+  font-size: 2rem;
+  margin-top: 3rem;
   text-align: center;
+}
+
+.jumbotron {
+  font-size: 1.75rem;
+  text-align: center;
+  margin: 5rem 0;
+}
+
+.centered-list {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  list-style: none; /* Remove default list styling */
+  padding: 0;
+  margin: 0;
+}
+
+.centered-list ul {
+  padding: 0;
+  margin: 0;
+}
+
+.centered-list li {
+  font-size: 2rem; /* Adjust the font size as needed */
+  text-align: center;
+}
+
+.large-icon {
+  font-size: 3rem;
 }
 
 .success,
@@ -269,7 +313,7 @@ form button:active,
 
 .nav-btn {
   padding: 0 2rem;
-  font-size: 2.4rem;
+  font-size: 5rem;
   display: none;
   background-color: #f68b1e;
   border: 0.1rem solid #c4670b;
@@ -310,7 +354,7 @@ form button:active,
 
 .nav-btn.abs {
   position: absolute;
-  top: 2rem;
+  top: 3rem;
   right: 1rem;
 }
 

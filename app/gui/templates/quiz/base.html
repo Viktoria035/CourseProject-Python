@@ -14,11 +14,11 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Orbitron:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href={% static 'question/main.css' %}>
+    <link rel="stylesheet" href="{% static 'question/main.css' %}">
   </head>
   <body>
     {% block content %} {% endblock content %}
-    <div class="msgs" style="font-size: 2rem;">
+    <div class="msgs" style="font-size: 3rem;">
       {% for message in messages %}
         <p class= {{message.tags}}>{{message}}</p>
       {% endfor %}
