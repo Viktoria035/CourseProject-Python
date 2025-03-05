@@ -133,8 +133,8 @@ def view_quiz(request, quiz_id):
             return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=question.id)
         elif question.question_type == 'multiple choice':
             return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=question.id)
-    elif request.method == 'POST' and request.data.get('create-room'):
-        multiplayer = MultiPlayerSession(room_code=request.data.get('room-name'), quiz=quiz, creater=player)
+    elif request.method == 'POST' and request.POST.get('create-room'):
+        multiplayer = MultiPlayerSession(room_code=request.POST.get('room-name'), quiz=quiz, creator=player)
         multiplayer.save()
         return redirect('multiplayer', room_code=multiplayer.room_code)
 
@@ -663,5 +663,8 @@ def view_multiplayer(request, room_code):
         messages.warning(request, 'Room does not exist!')
         return redirect('not_found')
     
-    context = {'room_code' : room_code , 'username' : username}
+    context = {
+        'room_code' : room_code, 
+        'username' : username
+        }
     return render(request, 'quiz/multiplayer.html' , context)

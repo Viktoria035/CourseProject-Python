@@ -14,7 +14,7 @@ from django.urls import path
 
 from channels.routing import ProtocolTypeRouter,URLRouter
 from channels.auth import AuthMiddlewareStack
-from app.consumers import MultiplayerQuizGame
+from app.gui.consumers import MultiplayerQuizGame
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 

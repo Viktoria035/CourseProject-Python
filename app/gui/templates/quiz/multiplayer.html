@@ -1,2 +1,54 @@
 <!-- JavaScript code which uses websockets to connect to ws://game/<room_code>,
     where room_code we get from context -->
+{% extends "quiz/base.html" %} 
+{% block content %} 
+{% include "quiz/header.html" %}
+    
+<script>
+    var room_code = '{{ context.room_code }}';
+    var username = '{{ context.username }}';
+    var player = username.charAt(0);
+
+    var ws = new WebSocket('ws://game/' + room_code);
+
+    ws.onopen = function(event) {
+        console.log('Connected to the game room:', room_code);
+        ws.send(JSON.stringify({ type: 'join', username: username }));
+    };
+
+    ws.onmessage = function(event) {
+        var message = JSON.parse(event.data);
+        if (message.type === 'question') {
+            displayQuestion(message.question);
+        } else if (message.type === 'answer') {
+            displayAnswer(message.username, message.answer);
+        } else if (message.type === 'score') {
+            updateScore(message.username, message.score);
+        }
+    };
+
+    ws.onclose = function(event) {
+        console.log('Disconnected from the game room:', room_code);
+    };
+
+    function displayQuestion(question) {
+        // Code to display the question on the page
+        console.log('New question:', question);
+    }
+
+    function displayAnswer(username, answer) {
+        // Code to display the answer on the page
+        console.log(username + ' answered:', answer);
+    }
+
+    function updateScore(username, score) {
+        // Code to update the score on the page
+        console.log(username + ' score:', score);
+    }
+
+    function sendAnswer(answer) {
+        ws.send(JSON.stringify({ type: 'answer', username: username, answer: answer }));
+    }
+
+    // Example usage: sendAnswer('My answer');
+{% endblock %}
