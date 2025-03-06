@@ -80,8 +80,7 @@ table {
   padding: 1.5rem;
 }
 
-table td,
-th {
+table td, th {
   padding: 2rem;
   padding-right: 5rem;
 }
@@ -129,8 +128,7 @@ table tr td:first-child {
   width: 100%;
 }
 
-.leaderboard table td,
-th {
+.leaderboard table td, th {
   border: 0.2rem solid rgb(75, 75, 134);
 }
 
@@ -200,8 +198,7 @@ a.button:focus {
   box-shadow: 0 0 0 0.3rem rgba(216, 142, 69, 0.56);
 }
 
-form button,
-a.button {
+form button, a.button {
   padding: 1rem 3rem;
   border-radius: 0.8rem;
   border: none;
@@ -213,8 +210,7 @@ a.button {
   outline: 0;
 }
 
-form button:active,
-.details .likes button#like-btn:active {
+form button:active, .details .likes button#like-btn:active {
   transform: scale(0.95);
 }
 
@@ -269,9 +265,7 @@ form button:active,
   font-size: 3rem;
 }
 
-.success,
-.error,
-.info {
+.success, .error, .info {
   width: 100%;
   position: absolute;
   top: -1.2rem;
@@ -346,8 +340,7 @@ form button:active,
   background-color: #1c1b2c;
 }
 
-.nav-btn.visible,
-.mobile.visible {
+.nav-btn.visible, .mobile.visible {
   display: initial;
 }
 

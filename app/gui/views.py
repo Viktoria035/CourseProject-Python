@@ -191,6 +191,12 @@ def view_single_choice_question(request, quiz_id, question_id):
             question=question,
             answer=answer,
         )
+
+        """If the player has already answered the quiz, he can not return to the previous question. So we redirect him to the quiz page."""
+        if player.active_attempt is None:
+            messages.error(request, 'You can not return when you have already answer the quiz. Please, start new quiz.')
+            return redirect('view_quiz', quiz_id=quiz_id)
+        
         question_response.save()
         player.active_attempt.responses.add(question_response)
         
@@ -242,6 +248,12 @@ def view_multiple_choice_question(request, quiz_id, question_id):
                 question=question,
                 answer=answer,
             )
+            
+            """If the player has already answered the quiz, he can not return to the previous question. So we redirect him to the quiz page."""
+            if player.active_attempt is None:
+                messages.error(request, 'You can not return when you have already answer the quiz. Please, start new quiz.')
+                return redirect('view_quiz', quiz_id=quiz_id)
+            
             question_response.save()
             player.active_attempt.responses.add(question_response)
             

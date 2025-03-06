@@ -1,31 +1,33 @@
 {% extends "quiz/base.html" %} 
 {% block content %}
 {% include "quiz/header.html" %}
-<h1>Your results from {{ quiz.title }} quiz are:</h1>
+
+<div class="card-columns" style="padding: 10px; margin: 20px;"></div>
+
+<h1 style="font-size: 3rem">Your results from {{ quiz.title }} quiz are:</h1>
 <br>
 {% for question in questions %}
-    <h1>{{ question.question }}</h1>
-    <ul><h3>
+    <h1 style="font-size: 3rem">{{ question.question }}</h1>
+    <ul>
     {% for answer in question.answers %}
-        <li>{{ answer.answer }} </li>
+        <li class="large-icon">{{ answer.answer }} </li>
     {% endfor %}
     <br>
-    <h2>Your answers: 
+    <h1 style="font-size: 2rem">😊Your answers: </h1>
     <br>
     {% for user_answer in question.user_answers %}
-        {{ user_answer.answer }} points
+        <h3 style="font-size: 1.5rem">{{ user_answer.answer }} points</h3>
         <br>
     {% endfor %}
     </h2>
     <br>
-    <h2>Correct answers: 
+    <h2 style="font-size: 2rem">✅Correct answers: </h2>
     <br>
     {% for right_answer in question.right_answers %}
-        {{ right_answer.answer }} - {{ right_answer.points }} points
+        <h3 style="font-size: 1.5rem">{{ right_answer.answer }} - {{ right_answer.points }} points</h3>
         <br>
     {% endfor %}
-    </h2>
-    </h3></ul>
+    </ul>
 {% endfor %}
 <br>
 <h1>Your score: {{ quiz_attempt.score }} </h1>
