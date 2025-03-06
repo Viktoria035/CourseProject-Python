@@ -36,7 +36,7 @@ def register(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         password_c = request.POST.get('password-c')
-        if (password == password_c):
+        if password == password_c:
             try:
                 user = User.objects.create_user(username, email, password);
                 user.save()
@@ -50,6 +50,27 @@ def register(request):
     if request.user.is_authenticated:
         return redirect('home')
     return render(request, 'registration/register.html')
+
+def password_reset(request):
+    """Password reset page."""
+
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        user = User.objects.filter(email=email).first()
+        if user is not None:
+            password = request.POST.get('password')
+            password_c = request.POST.get('password-c')
+            if password == password_c:
+                user.set_password(request.POST.get('password'))
+                user.save()
+                messages.success(request, 'Password reset successfully')
+                return redirect('login')
+            else:
+                messages.error(request, "Password doesn't match Confirm Password")
+                return render(request, 'registration/password_reset.html')
+        messages.error(request, 'Email not found')
+
+    return render(request, 'registration/password_reset.html')
 
 @login_required(login_url='/login')
 def rules(request):
