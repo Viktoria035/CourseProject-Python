@@ -51,26 +51,26 @@ def register(request):
         return redirect('home')
     return render(request, 'registration/register.html')
 
-def password_reset(request):
-    """Password reset page."""
+# def password_reset(request):
+#     """Password reset page."""
 
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        user = User.objects.filter(email=email).first()
-        if user is not None:
-            password = request.POST.get('password')
-            password_c = request.POST.get('password-c')
-            if password == password_c:
-                user.set_password(request.POST.get('password'))
-                user.save()
-                messages.success(request, 'Password reset successfully')
-                return redirect('login')
-            else:
-                messages.error(request, "Password doesn't match Confirm Password")
-                return render(request, 'registration/password_reset.html')
-        messages.error(request, 'Email not found')
+#     if request.method == 'POST':
+#         email = request.POST.get('email')
+#         user = User.objects.filter(email=email).first()
+#         if user is not None:
+#             password = request.POST.get('password')
+#             password_c = request.POST.get('password-c')
+#             if password == password_c:
+#                 user.set_password(request.POST.get('password'))
+#                 user.save()
+#                 messages.success(request, 'Password reset successfully')
+#                 return redirect('login')
+#             else:
+#                 messages.error(request, "Password doesn't match Confirm Password")
+#                 return render(request, 'registration/password_reset.html')
+#         messages.error(request, 'Email not found')
 
-    return render(request, 'registration/password_reset.html')
+#     return render(request, 'registration/password_reset.html')
 
 @login_required(login_url='/login')
 def rules(request):
