@@ -2,11 +2,11 @@
 {% block content %}
 {% include "quiz/header.html" %}
 <main>
-    <h1>All types of statistics</h1>
+    <h1 style="font-size: 3rem">Statistics of plays:</h1>
     <br>
     <ul>
-        <li><a href="{% url 'statistics_for_per_player' %}">For you</a></li>
-        <li><a href="{% url 'statistics_for_each_quiz_score' %}">For each quiz attempt</a></li>
+        <li class="large-icon"><a href="{% url 'statistics_for_per_player' %}" style="font-size: 2.5rem">For you</a></li>
+        <li class="large-icon"><a href="{% url 'statistics_for_each_quiz_score' %}" style="font-size: 2.5rem">For each quiz attempt</a></li>
     </ul>
 </main>
 {% endblock %}
