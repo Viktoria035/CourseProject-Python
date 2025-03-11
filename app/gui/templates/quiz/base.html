@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Quiz Portal</title>
+    <title>{% block title %}Quiz Portal{% endblock %}</title>
     <link rel="icon" href="{% static 'quiz.png' %}" type="image/png">
     <meta charset="utf-8" />
     <meta
@@ -14,13 +14,14 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Orbitron:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    {% block head %} {% endblock %}
     <link rel="stylesheet" href="{% static 'question/main.css' %}">
   </head>
   <body>
-    {% block content %} {% endblock content %}
-    <div class="msgs" style="font-size: 3rem;">
+    {% block content %} {% endblock %}
+    <div class="msgs" style="font-size: 2.5rem;">
       {% for message in messages %}
-        <p class= {{message.tags}}>{{message}}</p>
+        <p class= {{ message.tags }}>{{ message }}</p>
       {% endfor %}
     </div>
     <script src="{% static 'question/scripts.js' %}"></script>
