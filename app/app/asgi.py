@@ -14,21 +14,17 @@ from django.urls import path
 
 from channels.routing import ProtocolTypeRouter,URLRouter
 from channels.auth import AuthMiddlewareStack
-from app.gui.consumers import MultiplayerQuizGame
+from gui import routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
 application = get_asgi_application()
-
-ws_pattern = [
-        path('ws/game/<room_code>' , MultiplayerQuizGame)
-]
-
-
 application= ProtocolTypeRouter(
     {
-        'websocket':AuthMiddlewareStack(URLRouter(
-            ws_pattern
+        'http': get_asgi_application(),
+        'websocket': AuthMiddlewareStack(
+            URLRouter(
+            routing.websocket_urlpatterns
         ))
     }
 )
