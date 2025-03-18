@@ -147,7 +147,7 @@ def view_quiz(request, quiz_id):
     if request.method == 'POST' and request.POST.get('start-quiz'):
         question = Question.objects.filter(quiz=quiz).first()
         if question is None:
-            messages.warning(request, 'There are no questions in this quiz!')
+            messages.warning(request, 'No questions available for this quiz!')
             return redirect('not_found')
 
         quiz_attempt = QuizAttempt(quiz=quiz)
@@ -176,7 +176,6 @@ def view_quiz(request, quiz_id):
         if multiplayer is None:
             messages.warning(request, 'Room does not exist!')
             return redirect('not_found')
-        print(multiplayer.players.all())
         return redirect('multiplayer', room_code=multiplayer.room_code)
 
     context = {
@@ -709,26 +708,15 @@ def delete_category(request, category_id):
 @login_required(login_url='/login')
 def view_multiplayer(request, room_code):
     """Joins user to multiplayer game room."""
-    username = request.GET.get('username')
     player = Player.objects.get(user=request.user)
     multiplayer = MultiPlayerSession.objects.get(room_code=room_code)
-    
-
-    # if player not in multiplayer.players.all() and player != multiplayer.creator:
-    #     multiplayer.players.add(player)
-    #     multiplayer.save()
-    # else:
-    #     messages.warning(request, 'You are already in this room! You can not enter again')
-    #     return redirect('not_found')
-    
-    players = multiplayer.players.all()
+    username = player.user.username
     quiz = multiplayer.quiz
 
     context = {
         'room_code' : room_code, 
         'username' : username,
         'player' : player,
-        'players' : players,
         'quiz' : quiz
         }
     return render(request, 'quiz/multiplayer.html' , context)
