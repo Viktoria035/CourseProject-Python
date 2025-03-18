@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -70,8 +72,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'app.wsgi.application'
+ASGI_APPLICATION = 'app.asgi.application'
+# WSGI_APPLICATION = 'app.wsgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -133,8 +141,15 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = ""
-EMAIL_HOST_PASSWORD = ""
+EMAIL_HOST_USER = "some gmail account"
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
+# Retrieves the value of the environment variable EMAIL_PASSWORD and assigning it to the EMAIL_HOST_PASSWORD setting.
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login'
+
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
+# The value is in seconds. It is the number of seconds that a session will last. In this case, it is 7 days.
+SESSION_SAVE_EVERY_REQUEST = True
+# This setting is used to determine whether to save the session data on every request.
+# If this is set to True, the session data will be saved on every request.
