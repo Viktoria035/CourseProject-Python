@@ -22,8 +22,15 @@
     <form method="POST">
         {% csrf_token %}
         <h2>Play with friends</h2>
-        <input type="input" name="room-name" placeholder="Game Room Name">
-        <input type="submit" name="create-room" value="Create room">
+        <div>
+            <h3>Create a game</h3>
+            <input type="input" name="create-room-code" placeholder="Game Room Name">
+            <input type="submit" name="create-room" value="Create room">
+            <br>
+            <h3>Join a game</h3>
+            <input type="input" name="join-room-code" placeholder="Game Room Name">
+            <input type="submit" name="join-room" value="Join room">
+        </div>
     </form>
 </main>
 {% endblock %}
