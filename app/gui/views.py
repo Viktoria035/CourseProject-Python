@@ -16,7 +16,12 @@ def index(request):
 
     context = {}
     if request.user.is_authenticated:
-        player = Player.objects.get(user=request.user)
+        try:
+            player = Player.objects.get(user=request.user)
+        except Player.DoesNotExist:
+            messages.error(request, 'Player does not exist!')
+            return redirect('login')
+    
         change_player_level_by_score(player=player)
         get_player_rank_in_leaderboard(player=player)
         
@@ -155,8 +160,23 @@ def view_quiz(request, quiz_id):
         elif question.question_type == 'multiple choice':
             return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=question.id)
     elif request.method == 'POST' and request.POST.get('create-room'):
-        multiplayer = MultiPlayerSession(room_code=request.POST.get('room-name'), quiz=quiz, creator=player)
+        room_code = request.POST.get('create-room-code')
+        if room_code == '':
+            messages.error(request, 'You have to enter a room code to join!')
+            return redirect('view_quiz', quiz_id=quiz_id)
+        multiplayer = MultiPlayerSession(room_code=room_code, quiz=quiz, creator=player)
         multiplayer.save()
+        return redirect('multiplayer', room_code=multiplayer.room_code)
+    elif request.method == 'POST' and request.POST.get('join-room'):
+        room_code = request.POST.get('join-room-code')
+        if room_code == '':
+            messages.error(request, 'You have to enter a room code to join!')
+            return redirect('view_quiz', quiz_id=quiz_id)
+        multiplayer = MultiPlayerSession.objects.filter(room_code=room_code).first()
+        if multiplayer is None:
+            messages.warning(request, 'Room does not exist!')
+            return redirect('not_found')
+        print(multiplayer.players.all())
         return redirect('multiplayer', room_code=multiplayer.room_code)
 
     context = {
@@ -690,14 +710,25 @@ def delete_category(request, category_id):
 def view_multiplayer(request, room_code):
     """Joins user to multiplayer game room."""
     username = request.GET.get('username')
+    player = Player.objects.get(user=request.user)
     multiplayer = MultiPlayerSession.objects.get(room_code=room_code)
-
-    if multiplayer is None:
-        messages.warning(request, 'Room does not exist!')
-        return redirect('not_found')
     
+
+    # if player not in multiplayer.players.all() and player != multiplayer.creator:
+    #     multiplayer.players.add(player)
+    #     multiplayer.save()
+    # else:
+    #     messages.warning(request, 'You are already in this room! You can not enter again')
+    #     return redirect('not_found')
+    
+    players = multiplayer.players.all()
+    quiz = multiplayer.quiz
+
     context = {
         'room_code' : room_code, 
-        'username' : username
+        'username' : username,
+        'player' : player,
+        'players' : players,
+        'quiz' : quiz
         }
     return render(request, 'quiz/multiplayer.html' , context)
