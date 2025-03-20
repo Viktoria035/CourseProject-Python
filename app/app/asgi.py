@@ -18,10 +18,10 @@ from gui import routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
-application = get_asgi_application()
+asgi_application = get_asgi_application()
 application= ProtocolTypeRouter(
     {
-        'http': get_asgi_application(),
+        'http': asgi_application,
         'websocket': AuthMiddlewareStack(
             URLRouter(
             routing.websocket_urlpatterns
