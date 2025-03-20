@@ -5,14 +5,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <title>{% block title %}Quiz Portal{% endblock %}</title>
-    <link rel="icon" href="{% static 'question/images/quiz_icon.png' %}" type="image/png"/>
+    <link rel="icon" href="{% static 'quiz/images/quiz_icon.png' %}" type="image/png"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Orbitron:wght@400;500&display=swap"
       rel="stylesheet"
     />
     {% block head %} {% endblock %}
-    <link rel="stylesheet" href="{% static 'question/main.css' %}"/>
+    <link rel="stylesheet" href="{% static 'quiz/main.css' %}"/>
   </head>
   <body>
     {% block content %} {% endblock %}
@@ -21,6 +21,6 @@
         <p class= {{ message.tags }}>{{ message }}</p>
       {% endfor %}
     </div>
-    <script src="{% static 'question/scripts.js' %}"></script>
+    <script src="{% static 'quiz/scripts.js' %}"></script>
   </body>
 </html>
