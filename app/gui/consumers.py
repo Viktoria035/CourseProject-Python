@@ -1,123 +1,177 @@
-from channels.generic.websocket import WebsocketConsumer
-from asgiref.sync import async_to_sync
+from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
 import json
+from django.urls import reverse
 
-from gui.models import MultiPlayerSession, Player, Question, QuizAttempt, QuestionResponse, Answer
+from gui.models import MultiPlayerSession, Player, Question, QuizAttempt, QuestionResponse, Answer, Quiz
 
+class QuizConsumer(AsyncWebsocketConsumer):
+    """
+    WebSocekt consumer is created when a player connect to a multiplayer session.
+    It handles the communication between the players in the session.
+    The consumer is responsible for:
+      - sending the questions to the players;
+      - receiving their answers;
+      - sending the results from the quiz at the end of the play;
+    """
 
+    async def connect(self):
+        self.room_code = self.scope['url_route']['kwargs']['room_code']
+        self.room_group_name = f'quiz_{self.room_code}'
 
-class MultiplayerQuizGame(WebsocketConsumer):
-    def connect(self):
-        """In this function, we get the room name from the URL route parameters, 
-        and then we use it to get the MultiPlayerSession object from the database.
-        We also get the first question of the quiz and the room group name. 
-        We then add the user to the group and accept the connection."""
-
-        self.room_name = self.scope['url_route']['kwargs']['room_code']
-        self.multiplayer = MultiPlayerSession.objects.get(room_code=self.room_name)
-        self.question = Question.objects.filter(id=1, quiz=self.multiplayer.quiz).first()
-        self.room_group_name = 'room_%s' %  self.room_name
-        print(self.room_group_name) 
-        player = Player.objects.get(user=self.scope['user'])
-        
-        quiz_attempt = QuizAttempt(player=Player.objects.get(user=self.scope['user']), quiz=self.multiplayer.quiz)
-        quiz_attempt.save()
-        
-        player.active_attempt = quiz_attempt
-        player.save()
-        
-        self.multiplayer.players.add(player)
-        self.multiplayer.save()
-
-        async_to_sync(self.channel_layer.group_add)(
+        # Add the player to the group
+        await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-        
-        self.accept()
 
-        
-    def disconnect(self):
-        """In this function, we remove the user from the group and delete the MultiPlayerSession object if there is only one player left."""
-        if len(self.multiplayer.players) <= 1:
-            async_to_sync(self.channel_layer.group_discard)(
+        await self.accept()
+        print(f"Connected to room: {self.room_group_name}")
+
+        # Get or create the multiplayer session and player
+        self.multiplayer = await database_sync_to_async(MultiPlayerSession.objects.get)(room_code=self.room_code)
+        self.player = await database_sync_to_async(Player.objects.get)(user=self.scope['user'])
+
+        # Create a quiz attempt for the player
+        self.quiz = await database_sync_to_async(lambda: self.multiplayer.quiz)()
+        quiz_attempt, _ = await database_sync_to_async(QuizAttempt.objects.get_or_create)(player=self.player, quiz=self.quiz)
+        self.player.active_attempt = quiz_attempt
+        await database_sync_to_async(self.player.save)()
+
+        # Add player to the multiplayer session
+        await database_sync_to_async(self.multiplayer.players.add)(self.player)
+        await database_sync_to_async(self.multiplayer.save)()
+
+        # Notify other players that a new player has joined
+        # await self.channel_layer.group_send(
+        #     self.room_group_name,
+        #     {
+        #         'type': 'chat_message',
+        #         'message': f'{await database_sync_to_async(lambda: self.player.user.username)()} has joined the game'
+        #     }
+        # )
+
+    async def disconnect(self, close_code):
+        # Remove player from the session
+        await database_sync_to_async(self.multiplayer.players.remove)(self.player)
+        await database_sync_to_async(self.multiplayer.save)()
+
+        # Check if there are any players left in the session
+        if await database_sync_to_async(self.multiplayer.players.count)() == 0:
+            await database_sync_to_async(self.multiplayer.delete)()
+
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+        print(f"Disconnected from room: {self.room_group_name}")
+
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message_type = text_data_json['type']
+        username = text_data_json['username']
+
+        print(f"Received message: {text_data_json}")
+
+        if message_type == 'join':
+            await self.channel_layer.group_send(
                 self.room_group_name,
-                self.channel_name
-            )
-            self.multiplayer.delete()
-        else:
-            self.multiplayer.players.remove(self.scope['user'])
-            self.multiplayer.save()
-
-        
-    def receive(self , payload):
-        """In this function, we have a few different cases.
-        If the action is start_game and the player is the creator, we send the question to the group.
-        If the action is submit_answer, we save the player's response and check if all players have answered.
-        If all players have answered, we send the next question to the group.
-        If there are no more questions, we send the results to the group."""
-
-        print(payload)
-        player = Player.objects.get(user=self.scope['user'])
-
-        if payload['action'] == 'start_game' and player == self.multiplayer.creator:
-            # Creator starts the game
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name,{
-                    'action' : 'question',
-                    'game_status' : 'running',
-                    'payload' : self.question
+                {
+                    'type': 'chat_message',
+                    'message': f'{username} has joined the join game'
                 }
             )
-        elif payload['action'] == 'submit_answer':
-            # Player submits answer
-            answer_responses_ids = payload['answers_ids']
+        elif message_type == 'start_game':
+            await self.start_game()
+        elif message_type == 'submit_answer':
+            await self.submit_answer(text_data_json['answers_ids'])
 
-            answers = [Answer.objects.filter(question=self.question, id=answer_response_id).first() for answer_response_id in answer_responses_ids]
-            for answer in answers:
-                question_response = QuestionResponse(
-                    player=player,
-                    quiz=self.multiplayer.quiz,
-                    question=self.question,
-                    answer=answer,
-                )
-                question_response.save()
-                player.active_attempt.responses.add(question_response)
-                
-                if answer.is_correct:
-                    player.active_attempt.score += answer.points
-                    player.active_attempt.save()
-            player.save()
+    async def start_game(self):
+        first_question = await database_sync_to_async(lambda: Question.objects.filter(quiz=self.quiz).first())()
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'show_question',
+                'question': self.serialize_question(first_question, self.quiz),
+                'room_code': self.room_code
+            }
+        )
 
-        next_question = Question.objects.filter(quiz=self.multiplayer.quiz, id__gt=self.question.id).first()
-        
-        if next_question:
-            answered_count = 0
-            for player in self.multiplayer.players:
-                for response in player.active_attempt.responses:
-                    if response.question == self.question:
-                        answered_count += 1
+    async def submit_answer(self, answers_ids):
+        answers = [await database_sync_to_async(Answer.objects.get)(id=ans_id) for ans_id in answers_ids]
+        for answer in answers:
+            question_response = await database_sync_to_async(QuestionResponse.objects.create)(
+                player=self.player,
+                quiz=self.quiz,
+                question=answer.question,
+                answer=answer
+            )
+            await database_sync_to_async(self.player.active_attempt.responses.add)(question_response)
+            if answer.is_correct:
+                self.player.active_attempt.score += answer.points
+                await database_sync_to_async(self.player.active_attempt.save)()
 
-            if next_question and answered_count == len(self.multiplayer.players):
-                # All players have answered
-                async_to_sync(self.channel_layer.group_send)(
-                    self.room_group_name,{
-                        'action' : 'question',
-                        'game_status' : 'running',
-                        'payload' : next_question
+        await database_sync_to_async(self.player.save)()
+
+        # Check if all players have answered the current question
+        current_question = answers[0].question
+        answered_count = 0
+        for player in await database_sync_to_async(self.multiplayer.players.all)():
+            for response in player.active_attempt.responses.all():
+                if response.question == current_question:
+                    answered_count += 1
+
+        if answered_count == await database_sync_to_async(self.multiplayer.players.count)():
+            next_question = await database_sync_to_async(Question.objects.filter)(quiz=self.quiz, id__gt=current_question.id).first()
+            if next_question:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'show_question',
+                        'question': self.serialize_question(next_question)
                     }
                 )
-        else:
-            results = []
-            for player in self.multiplayer.players:
-                results.append({
-                    "player": player.user.username,
-                    "score": player.active_attempt.score
-                })
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name,{
-                    'action' : 'question',
-                    'game_status' : 'ended',
-                    'results' : results
-                }
-            )
+            else:
+                results = []
+                for player in await database_sync_to_async(self.multiplayer.players.all)():
+                    results.append({
+                        'player': player.user.username,
+                        'score': player.active_attempt.score
+                    })
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'show_results',
+                        'results': results
+                    }
+                )
+
+    def serialize_question(self, question, quiz):
+        return {
+        'id': question.id,
+        'text': question.question,
+        'url': reverse('view_single_choice_question', kwargs={'quiz_id': quiz.id, 'question_id': question.id}) 
+        if question.question_type == 'single choice' 
+        else reverse('view_multiple_choice_question', kwargs={'quiz_id': quiz.id, 'question_id': question.id}),
+        'open_in_new_tab': True
+    }
+
+    async def show_question(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'show_question',
+            'question': event['question'],
+            'room_code': event['room_code']
+        }))
+
+    async def show_results(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'show_results',
+            'results': event['results']
+        }))
+
+    async def chat_message(self, event):
+        message = event['message']
+        await self.send(text_data=json.dumps({
+            'message': message
+        }))
+        print(f"Sent message: {message}")

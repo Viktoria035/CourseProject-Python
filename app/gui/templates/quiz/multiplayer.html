@@ -1,54 +1,65 @@
-<!-- JavaScript code which uses websockets to connect to ws://game/<room_code>,
-    where room_code we get from context -->
-{% extends "quiz/base.html" %} 
-{% block content %} 
+<!-- filepath: d:\Projects\python\Project\app\gui\templates\quiz\multiplayer.html -->
+{% extends "quiz/base.html" %}
+{% block content %}
 {% include "quiz/header.html" %}
-    
+
+<div class="card-columns" style="padding: 10px; margin: 20px;"></div>
+
+<div class="rules">
+    <h1>Here are some of the rules for the multiplayer game:</h1>
+    <ul><h1>
+        <li>Each player will be given a question to answer.</li>
+        <li>The next question will be displayed only after all players have answered the current question.</li>
+        <li>Questions can have one or multiple answer/s. Be careful!</li>
+        <li>The results will be displayed after all players have answered the last question.</li>
+        <li>The answers are with different points.</li>
+        <li>The player with the highest score at the end of the game will be declared the winner.</li>
+    </ul></h1>
+    <h1>To start and proceed to the questions click down below.</h1>
+</div>
+
+<div id="question-container" style="display: flex; justify-content: center;">
+    <a href="#" id="start-quiz" style="font-size: 2.5rem;">Question</a>
+</div>
+<div id="results-container"></div>
+
 <script>
-    var room_code = '{{ context.room_code }}';
-    var username = '{{ context.username }}';
-    var player = username.charAt(0);
+    const room_code = '{{ room_code }}';
+    const username = '{{ username }}';
+    const player = '{{ player }}';
+    const quiz = '{{ quiz }}';
 
-    var ws = new WebSocket('ws://game/' + room_code);
+    const quizSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/multiplayer/' + room_code + '/'
+    );
 
-    ws.onopen = function(event) {
-        console.log('Connected to the game room:', room_code);
-        ws.send(JSON.stringify({ type: 'join', username: username }));
-    };
+    document.getElementById("start-quiz").addEventListener("click", function(event) {
+        event.preventDefault();  // Предотвратява презареждане на страницата
+        quizSocket.send(JSON.stringify({
+            "type": "start_game",
+            "username": username
+        }));
+    });
 
-    ws.onmessage = function(event) {
-        var message = JSON.parse(event.data);
-        if (message.type === 'question') {
-            displayQuestion(message.question);
-        } else if (message.type === 'answer') {
-            displayAnswer(message.username, message.answer);
-        } else if (message.type === 'score') {
-            updateScore(message.username, message.score);
+    quizSocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        if (data.room_code === undefined || data.room_code === null) {
+            console.error("Invalid room code: ", data.room_code);
+            return;
+        }
+
+        if (data.question.open_in_new_tab) {
+            window.open(data.question.url, '_blank');
+        } else {
+            window.location.href = data.question.url;
+        }
+        
+        if (data.type === "show_question") {
+            document.getElementById("question-container").innerHTML = `
+                <a href="${data.question.url}" style="font-size: 2.5rem;">Question</a>
+            `;
         }
     };
-
-    ws.onclose = function(event) {
-        console.log('Disconnected from the game room:', room_code);
-    };
-
-    function displayQuestion(question) {
-        // Code to display the question on the page
-        console.log('New question:', question);
-    }
-
-    function displayAnswer(username, answer) {
-        // Code to display the answer on the page
-        console.log(username + ' answered:', answer);
-    }
-
-    function updateScore(username, score) {
-        // Code to update the score on the page
-        console.log(username + ' score:', score);
-    }
-
-    function sendAnswer(answer) {
-        ws.send(JSON.stringify({ type: 'answer', username: username, answer: answer }));
-    }
-
-    // Example usage: sendAnswer('My answer');
+</script>
 {% endblock %}

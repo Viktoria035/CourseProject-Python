@@ -712,11 +712,26 @@ def view_multiplayer(request, room_code):
     multiplayer = MultiPlayerSession.objects.get(room_code=room_code)
     username = player.user.username
     quiz = multiplayer.quiz
+    question = Question.objects.filter(quiz=quiz).first()
 
     context = {
         'room_code' : room_code, 
         'username' : username,
         'player' : player,
-        'quiz' : quiz
+        'quiz' : quiz,
+        'question' : question
         }
     return render(request, 'quiz/multiplayer.html' , context)
+
+# Maybe unusable
+# @login_required(login_url='/login')
+# def render_question_template(request, question_id, quiz_id):
+#     """Renders the question template for multiplayer game."""
+#     question = Question.objects.get(id=question_id)
+#     if question.question_type == 'single choice':
+#         return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=question.id)
+#     elif question.question_type == 'multiple choice':
+#         return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=question.id)
+#     else:
+#         messages.error(request, 'Something went wrong!')
+#     return redirect('not_found')
