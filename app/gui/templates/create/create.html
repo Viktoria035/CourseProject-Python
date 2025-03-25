@@ -1,17 +1,27 @@
-{% extends "quiz/base.html" %} 
+{% extends 'quiz/base.html' %}
 
-{% block title %}Create Quiz{% endblock %}
+{% block title %}
+  Create Quiz
+{% endblock %}
 
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
-    <h1 style="font-size: 3rem">Create your own quiz: </h1>
-    <br>
+  {% include 'quiz/header.html' %}
+  <main>
+    <h1 style="font-size: 3rem">Create your own quiz:</h1>
+    <br />
     <ul>
-        <li class="large-icon"><a href="{% url 'create_category' %}" style="font-size: 2.5rem">Create a category</a></li>
-        <li class="large-icon"><a href="{% url 'create_quiz' %}" style="font-size: 2.5rem">Create a quiz</a></li>
-        <li class="large-icon"><a href="{% url 'create_question' %}" style="font-size: 2.5rem">Create a question</a></li>
-        <li class="large-icon"><a href="{% url 'create_answer' %}" style="font-size: 2.5rem">Create an answer</a></li>
+      <li class="large-icon">
+        <a href="{% url 'create_category' %}" style="font-size: 2.5rem">Create a category</a>
+      </li>
+      <li class="large-icon">
+        <a href="{% url 'create_quiz' %}" style="font-size: 2.5rem">Create a quiz</a>
+      </li>
+      <li class="large-icon">
+        <a href="{% url 'create_question' %}" style="font-size: 2.5rem">Create a question</a>
+      </li>
+      <li class="large-icon">
+        <a href="{% url 'create_answer' %}" style="font-size: 2.5rem">Create an answer</a>
+      </li>
     </ul>
-</main>
+  </main>
 {% endblock %}

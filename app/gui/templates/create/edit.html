@@ -1,15 +1,21 @@
-{% extends "quiz/base.html" %}
+{% extends 'quiz/base.html' %}
 
-{% block title %}Edit Quiz{% endblock %}
+{% block title %}
+  Edit Quiz
+{% endblock %}
 
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
+  {% include 'quiz/header.html' %}
+  <main>
     <h1 style="font-size: 3rem">Edit your own quiz:</h1>
-    <br>
+    <br />
     <ul>
-        <li class="large-icon"><a href="{% url 'show_all_questions_for_player' %}" style="font-size: 2.5rem">Edit a question</a></li>
-        <li class="large-icon"><a href="{% url 'show_all_answers_for_player' %}" style="font-size: 2.5rem">Edit an answer</a></li>
+      <li class="large-icon">
+        <a href="{% url 'show_all_questions_for_player' %}" style="font-size: 2.5rem">Edit a question</a>
+      </li>
+      <li class="large-icon">
+        <a href="{% url 'show_all_answers_for_player' %}" style="font-size: 2.5rem">Edit an answer</a>
+      </li>
     </ul>
-</main>
+  </main>
 {% endblock %}

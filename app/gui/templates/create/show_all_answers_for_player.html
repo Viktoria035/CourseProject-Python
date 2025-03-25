@@ -1,13 +1,15 @@
-{% extends "quiz/base.html" %}
+{% extends 'quiz/base.html' %}
 
-{% block title %}Answers{% endblock %}
+{% block title %}
+  Answers
+{% endblock %}
 
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
+  {% include 'quiz/header.html' %}
+  <main>
     {% for answer in answers %}
-        <h1>{{ answer.answer }}</h1>
-        <a href="{% url 'edit_answer' answer_id=answer.id %}" class="button" >Edit</a>
+      <h1>{{ answer.answer }}</h1>
+      <a href="{% url 'edit_answer' answer_id=answer.id %}" class="button">Edit</a>
     {% endfor %}
-</main>
+  </main>
 {% endblock %}
