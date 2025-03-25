@@ -1,15 +1,21 @@
-{% extends "quiz/base.html" %} 
+{% extends 'quiz/base.html' %}
 
-{% block title %}Statistics{% endblock %}
+{% block title %}
+  Statistics
+{% endblock %}
 
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
+  {% include 'quiz/header.html' %}
+  <main>
     <h1 style="font-size: 3rem">Statistics of plays:</h1>
-    <br>
+    <br />
     <ul>
-        <li class="large-icon"><a href="{% url 'statistics_for_per_player' %}" style="font-size: 2.5rem">For you</a></li>
-        <li class="large-icon"><a href="{% url 'statistics_for_each_quiz_score' %}" style="font-size: 2.5rem">For each quiz attempt</a></li>
+      <li class="large-icon">
+        <a href="{% url 'statistics_for_per_player' %}" style="font-size: 2.5rem">For you</a>
+      </li>
+      <li class="large-icon">
+        <a href="{% url 'statistics_for_each_quiz_score' %}" style="font-size: 2.5rem">For each quiz attempt</a>
+      </li>
     </ul>
-</main>
+  </main>
 {% endblock %}

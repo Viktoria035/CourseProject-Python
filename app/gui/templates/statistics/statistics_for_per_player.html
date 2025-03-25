@@ -1,13 +1,15 @@
-{% extends "quiz/base.html" %}
+{% extends 'quiz/base.html' %}
 
-{% block title %}Statistics{% endblock %}
+{% block title %}
+  Statistics
+{% endblock %}
 
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
+  {% include 'quiz/header.html' %}
+  <main>
     <h1>Points earned per day since Registration</h1>
     {% if chart %}
-        <img src="data:image/png;base64, {{chart|safe}}">
+      <img src="data:image/png;base64, {{ chart|safe }}" />
     {% endif %}
-</main>
+  </main>
 {% endblock %}
