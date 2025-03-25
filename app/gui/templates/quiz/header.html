@@ -1,17 +1,31 @@
 {% load static %}
 <header>
-  <img src="{% static "quiz/images/quiz.png" %}" alt="Logo">
+  <img src="{% static 'quiz/images/quiz.png' %}" alt="Logo" />
   <nav>
     <ul>
-      <li><a href="{% url "index" %}">Home</a></li><br>
-      <li><a href="{% url "rules" %}">Quizzes</a></li><br>
-      <li><a href="{% url "leaderboard" %}">Leaderboard</a></li><br>
-      <li><a href="{% url "create_edit_page" %}">Create/Edit</a></li><br>
-      <li><a href="{% url "forum_page" %}">Forum</a></li><br>
+      <li>
+        <a href="{% url 'index' %}">Home</a>
+      </li><br />
+      <li>
+        <a href="{% url 'rules' %}">Quizzes</a>
+      </li><br />
+      <li>
+        <a href="{% url 'leaderboard' %}">Leaderboard</a>
+      </li><br />
+      <li>
+        <a href="{% url 'create_edit_page' %}">Create/Edit</a>
+      </li><br />
+      <li>
+        <a href="{% url 'forum_page' %}">Forum</a>
+      </li><br />
       {% if user.is_authenticated %}
-      <li><a href="{% url "logout" %}">Logout</a></li>
+        <li>
+          <a href="{% url 'logout' %}">Logout</a>
+        </li>
       {% else %}
-      <li><a href="{% url "login" %}">Login</a></li>
+        <li>
+          <a href="{% url 'login' %}">Login</a>
+        </li>
       {% endif %}
     </ul>
   </nav>

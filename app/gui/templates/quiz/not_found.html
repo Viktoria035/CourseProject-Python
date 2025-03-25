@@ -1,8 +1,8 @@
-{% extends "quiz/base.html" %} 
+{% extends 'quiz/base.html' %}
 {% block content %}
-{% include "quiz/header.html" %}
-{% load static %}
-<body>
-    <img src="{% static "question/images/R.gif" %}" alt="Not_found" style="height: 80%; width: 80%" /> 
-</body>
+  {% include 'quiz/header.html' %}
+  {% load static %}
+  <body>
+    <img src="{% static 'question/images/R.gif' %}" alt="Not_found" style="height: 80%; width: 80%" />
+  </body>
 {% endblock %}

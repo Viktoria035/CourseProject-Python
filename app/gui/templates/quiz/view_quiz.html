@@ -1,36 +1,38 @@
-{% extends "quiz/base.html" %}
+{% extends 'quiz/base.html' %}
 
-{% block title %}Quiz{% endblock %}
+{% block title %}
+  Quiz
+{% endblock %}
 
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
+  {% include 'quiz/header.html' %}
+  <main>
     <ol>
-        <h1 style="font-size: 5rem">Title: {{ quiz.title }}</h1>
-        <br>
-        <h2 style="font-size: 2.5rem" >Discription: {{ quiz.description }}</h2>
-        <h2 style="font-size: 2.5rem">Difficulty: {{ quiz.difficulty }}</h2>
-        <h2 style="font-size: 2.5rem">Passing Marks: {{ quiz.pass_mark }}</h2>
+      <h1 style="font-size: 5rem">Title: {{ quiz.title }}</h1>
+      <br />
+      <h2 style="font-size: 2.5rem">Discription: {{ quiz.description }}</h2>
+      <h2 style="font-size: 2.5rem">Difficulty: {{ quiz.difficulty }}</h2>
+      <h2 style="font-size: 2.5rem">Passing Marks: {{ quiz.pass_mark }}</h2>
     </ol>
 
     <form method="POST">
-        {% csrf_token %}
-        <h2>Play alone</h2>
-        <input type="submit" name="start-quiz" value="Start Quiz">
+      {% csrf_token %}
+      <h2>Play alone</h2>
+      <input type="submit" name="start-quiz" value="Start Quiz" />
     </form>
 
     <form method="POST">
-        {% csrf_token %}
-        <h2>Play with friends</h2>
-        <div>
-            <h3>Create a game</h3>
-            <input type="input" name="create-room-code" placeholder="Game Room Name">
-            <input type="submit" name="create-room" value="Create room">
-            <br>
-            <h3>Join a game</h3>
-            <input type="input" name="join-room-code" placeholder="Game Room Name">
-            <input type="submit" name="join-room" value="Join room">
-        </div>
+      {% csrf_token %}
+      <h2>Play with friends</h2>
+      <div>
+        <h3>Create a game</h3>
+        <input type="input" name="create-room-code" placeholder="Game Room Name" />
+        <input type="submit" name="create-room" value="Create room" />
+        <br />
+        <h3>Join a game</h3>
+        <input type="input" name="join-room-code" placeholder="Game Room Name" />
+        <input type="submit" name="join-room" value="Join room" />
+      </div>
     </form>
-</main>
+  </main>
 {% endblock %}

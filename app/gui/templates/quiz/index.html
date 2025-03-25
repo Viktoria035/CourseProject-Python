@@ -1,39 +1,35 @@
-{% extends "quiz/base.html" %}
+{% extends 'quiz/base.html' %}
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
-  <div class="dashboard">
-    {% if user.is_authenticated %}
-      <table class="card">
-        <tr>
-          <td>Username</td>
-          <td>{{user}}</td>
-        </tr>
-        <tr>
-          <td>Level</td>
-          <td>{{level}}</td>
-        </tr>
-        <tr>
-          <td>Score</td>
-          <td>{{score}}</td>
-        </tr>
-        <tr>
-          <td>Rank</td>
-          <td>{{rank}}</td>
-        </tr>
-      </table>
+  {% include 'quiz/header.html' %}
+  <main>
+    <div class="dashboard">
+      {% if user.is_authenticated %}
+        <table class="card">
+          <tr>
+            <td>Username</td>
+            <td>{{ user }}</td>
+          </tr>
+          <tr>
+            <td>Level</td>
+            <td>{{ level }}</td>
+          </tr>
+          <tr>
+            <td>Score</td>
+            <td>{{ score }}</td>
+          </tr>
+          <tr>
+            <td>Rank</td>
+            <td>{{ rank }}</td>
+          </tr>
+        </table>
         <a href="statistics" class="button">Statistics</a>
-    {% else %}
-      <div class="card hello">
-        <h2>Welcome to Quizzko 😊!</h2>
-        <p>
-          Quizzko is a quiz game where you can test your knowledge in various
-          fields. You can play single player or multiplayer. You can also
-          create your own quiz and challenge your friends.
-        </p>
-      </div>
-    {% endif %}
-  </div>
-  <div class="illustration"></div>
-</main>
+      {% else %}
+        <div class="card hello">
+          <h2>Welcome to Quizzko 😊!</h2>
+          <p>Quizzko is a quiz game where you can test your knowledge in various fields. You can play single player or multiplayer. You can also create your own quiz and challenge your friends.</p>
+        </div>
+      {% endif %}
+    </div>
+    <div class="illustration"></div>
+  </main>
 {% endblock %}

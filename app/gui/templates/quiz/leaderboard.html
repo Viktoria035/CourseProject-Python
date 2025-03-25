@@ -1,23 +1,25 @@
-{% extends "quiz/base.html" %} 
+{% extends 'quiz/base.html' %}
 
-{% block title %}Leaderboard{% endblock %}
+{% block title %}
+  Leaderboard
+{% endblock %}
 
-{% block content %} 
-{% include "quiz/header.html" %}
-<div class="leaderboard">
-  <table class="card">
-    <tr>
-      <th>#</th>
-      <th>Username</th>
-      <th>Score</th>
-    </tr>
-    {% for pr in profiles %}
-    <tr>
-      <th scope="row">{{ forloop.counter }}</th>
-      <td>{{ pr.user }}</td>
-      <td>{{ pr.score }}</td>
-    </tr>
-    {% endfor %}
-  </table>
-</div>
+{% block content %}
+  {% include 'quiz/header.html' %}
+  <div class="leaderboard">
+    <table class="card">
+      <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>Score</th>
+      </tr>
+      {% for pr in profiles %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ pr.user }}</td>
+          <td>{{ pr.score }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
 {% endblock %}

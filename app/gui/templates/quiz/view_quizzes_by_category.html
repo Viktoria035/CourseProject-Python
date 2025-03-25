@@ -1,21 +1,25 @@
-{% extends "quiz/base.html" %}
+{% extends 'quiz/base.html' %}
 
-{% block title %}Quizzes{% endblock %}
+{% block title %}
+  Quizzes
+{% endblock %}
 
 {% block content %}
-{% include "quiz/header.html" %}
-<main>
-    <h1>Quizzes with {{ category }}: </h1>
-    <br>
+  {% include 'quiz/header.html' %}
+  <main>
+    <h1>Quizzes with {{ category }}:</h1>
+    <br />
     <ul>
-        {% for quiz in quizzes %}
-            <li class="large-icon"><a style="font-size: 2.5rem;" href="{% url 'view_quiz' quiz_id=quiz.id %}">{{ quiz.title }}</a></li>
-            <br>
-            <br>
-            <a href="{% url 'edit_quiz' quiz_id=quiz.id category=category %}" class="button">Edit</a>
-            <br>
-            <br>
-        {% endfor %}
+      {% for quiz in quizzes %}
+        <li class="large-icon">
+          <a style="font-size: 2.5rem;" href="{% url 'view_quiz' quiz_id=quiz.id %}">{{ quiz.title }}</a>
+        </li>
+        <br />
+        <br />
+        <a href="{% url 'edit_quiz' quiz_id=quiz.id category=category %}" class="button">Edit</a>
+        <br />
+        <br />
+      {% endfor %}
     </ul>
-</main>
+  </main>
 {% endblock %}

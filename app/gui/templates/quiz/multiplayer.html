@@ -1,29 +1,31 @@
 <!-- filepath: d:\Projects\python\Project\app\gui\templates\quiz\multiplayer.html -->
-{% extends "quiz/base.html" %}
+{% extends 'quiz/base.html' %}
 {% block content %}
-{% include "quiz/header.html" %}
+  {% include 'quiz/header.html' %}
 
-<div class="card-columns" style="padding: 10px; margin: 20px;"></div>
+  <div class="card-columns" style="padding: 10px; margin: 20px;"></div>
 
-<div class="rules">
+  <div class="rules">
     <h1>Here are some of the rules for the multiplayer game:</h1>
-    <ul><h1>
+    <ul>
+      <h1>
         <li>Each player will be given a question to answer.</li>
         <li>The next question will be displayed only after all players have answered the current question.</li>
         <li>Questions can have one or multiple answer/s. Be careful!</li>
         <li>The results will be displayed after all players have answered the last question.</li>
         <li>The answers are with different points.</li>
         <li>The player with the highest score at the end of the game will be declared the winner.</li>
-    </ul></h1>
+      </h1>
+    </ul>
     <h1>Click below to start the game.</h1>
-</div>
+  </div>
 
-<div id="question-container" style="display: flex; justify-content: center;">
+  <div id="question-container" style="display: flex; justify-content: center;">
     <a href="#" id="start-quiz" style="font-size: 2.5rem;">Start Game</a>
-</div>
-<div id="results-container"></div>
+  </div>
+  <div id="results-container"></div>
 
-<script>
+  <script>
     const room_code = '{{ room_code }}';
     const username = '{{ username }}';
     const player = '{{ player }}';
@@ -86,7 +88,7 @@
             console.log("✅ Answer submitted:", data);
         });
     }
-
+    
     {% comment %} window.addEventListener('load', function(event) {
         if (sessionStorage.getItem('websocket_reconnect') === 'true') {
             const lastQuestion = sessionStorage.getItem('last_question_url');
