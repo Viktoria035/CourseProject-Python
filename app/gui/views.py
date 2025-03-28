@@ -9,6 +9,11 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm, CreateInForumForm, CreateInDiscussionForm
 from datetime import date
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 def index(request):
@@ -164,6 +169,12 @@ def view_quiz(request, quiz_id):
         if room_code == '':
             messages.error(request, 'You have to enter a room code to join!')
             return redirect('view_quiz', quiz_id=quiz_id)
+        if MultiPlayerSession.objects.filter(room_code=room_code).exists():
+            messages.error(request, 'Room code already exists! Please enter a different one.')
+            return redirect('view_quiz', quiz_id=quiz_id)
+        if MultiPlayerSession.objects.filter(creator=player).exists():
+            messages.error(request, 'You already created a room!')
+            return redirect('view_quiz', quiz_id=quiz_id)
         multiplayer = MultiPlayerSession(room_code=room_code, quiz=quiz, creator=player)
         multiplayer.save()
         return redirect('multiplayer', room_code=multiplayer.room_code)
@@ -176,6 +187,12 @@ def view_quiz(request, quiz_id):
         if multiplayer is None:
             messages.warning(request, 'Room does not exist!')
             return redirect('not_found')
+        if player in multiplayer.players.all():
+            messages.warning(request, 'You are already in the room!')
+            return redirect('not_found')
+        elif multiplayer.players.count() == 5:
+            messages.warning(request, 'Room is full! Please enter another one.')
+            return redirect(view_quiz, quiz_id=quiz_id)
         return redirect('multiplayer', room_code=multiplayer.room_code)
 
     context = {
@@ -722,6 +739,57 @@ def view_multiplayer(request, room_code):
         'question' : question
         }
     return render(request, 'quiz/multiplayer.html' , context)
+
+@csrf_exempt
+def start_game(request, room_code):
+    if request.method == "POST":
+        session = MultiPlayerSession.objects.get(room_code=room_code)
+        first_question = Question.objects.filter(quiz=session.quiz).first()
+
+        if first_question:
+            session.current_question = first_question
+            session.save()
+
+            channel_layer = get_channel_layer()
+            channel_layer.group_send(
+                f"quiz_{room_code}",
+                {
+                    "type": "show_question",
+                    "question": {
+                        "url": f"/quiz/{session.quiz.id}/single_choice_question/{first_question.id}/"
+                    }
+                }
+            )
+
+            return JsonResponse({"status": "success"})
+        return JsonResponse({"status": "error", "message": "No questions found"}, status=400)
+
+@csrf_exempt
+def submit_answer(request, room_code):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        session = MultiPlayerSession.objects.get(room_code=room_code)
+        answer = Answer.objects.get(id=data["answer_id"])
+
+        QuestionResponse.objects.create(
+            player=Player.objects.get(user__username=data["username"]),
+            quiz=session.quiz,
+            question=answer.question,
+            answer=answer
+        )
+
+        return JsonResponse({"status": "success"})
+    
+@login_required(login_url='/login')
+def multiplayer_leaderboard(request):
+    """Multiplayer leaderboard page."""
+
+    multiplayer = MultiPlayerSession.objects.get(room_code=request.POST.get('room_code'))
+    context = {
+        'profiles': multiplayer.players.all(),
+        'scores': []
+    }
+    return render(request, 'quiz/multiplayer_leaderboard.html', context=context)
 
 # Maybe unusable
 # @login_required(login_url='/login')
