@@ -168,5 +168,5 @@ class MultiPlayerSession(models.Model):
     creator = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='creator', verbose_name=_("Creator"), null=True)
     players = models.ManyToManyField(Player, related_name='game_players', verbose_name=_("Players"))
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name=_("Quiz"))
-    ended = models.BooleanField(default=False, verbose_name=_("Ended"))
+    started = models.BooleanField(default=False, verbose_name=_("Started"))
     current_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("Current Question"))
