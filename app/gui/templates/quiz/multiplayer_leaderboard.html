@@ -1,0 +1,25 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}
+  Leaderboard
+{% endblock %}
+
+{% block content %}
+  {% include 'quiz/header.html' %}
+  <div id="multiplayer_leaderboard" class="leaderboard">
+    <table class="card">
+      <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>Score</th>
+      </tr>
+      {% for result in results %}
+        <tr>
+          <th scope="row">{{ forloop.counter }}</th>
+          <td>{{ result.player_username }}</td>
+          <td>{{ result.score }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+{% endblock %}
