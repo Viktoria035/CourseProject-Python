@@ -9,7 +9,8 @@ html {
   position: relative;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -66,7 +67,7 @@ main .dashboard {
 main .illustration {
   width: 50%;
   height: min(33vw, 44.743rem);
-  background-image: url("../question/images/quiz-illustration.svg");
+  background-image: url("../images/quiz-illustration.svg");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -80,7 +81,8 @@ table {
   padding: 1.5rem;
 }
 
-table td, th {
+table td,
+th {
   padding: 2rem;
   padding-right: 5rem;
 }
@@ -128,20 +130,23 @@ table tr td:first-child {
   width: 100%;
 }
 
-.leaderboard table td, th {
+.leaderboard table td,
+th {
   border: 0.2rem solid rgb(75, 75, 134);
 }
 
 .answer-checkbox {
   margin-bottom: 0;
   height: 30px;
-  width: 30px; /* Change the width as needed */
+  width: 30px;
+  /* Change the width as needed */
 }
 
 .answer-label {
   display: inline;
   margin-left: 5px;
-  font-size: 3rem; /* Change the font size as needed */
+  font-size: 3rem;
+  /* Change the font size as needed */
 }
 
 .details {
@@ -165,12 +170,12 @@ form {
   text-align: center;
 }
 
-form .ques-label{
+form .ques-label {
   width: 100%;
   position: relative;
 }
 
-form .ques-label .status{
+form .ques-label .status {
   position: absolute;
   width: 2rem;
   right: 1.3rem;
@@ -198,7 +203,8 @@ a.button:focus {
   box-shadow: 0 0 0 0.3rem rgba(216, 142, 69, 0.56);
 }
 
-form button, a.button {
+form button,
+a.button {
   padding: 1rem 3rem;
   border-radius: 0.8rem;
   border: none;
@@ -210,7 +216,8 @@ form button, a.button {
   outline: 0;
 }
 
-form button:active, .details .likes button#like-btn:active {
+form button:active,
+.details .likes button#like-btn:active {
   transform: scale(0.95);
 }
 
@@ -246,7 +253,8 @@ form button:active, .details .likes button#like-btn:active {
   display: flex;
   justify-content: center;
   align-items: center;
-  list-style: none; /* Remove default list styling */
+  list-style: none;
+  /* Remove default list styling */
   padding: 0;
   margin: 0;
 }
@@ -257,7 +265,8 @@ form button:active, .details .likes button#like-btn:active {
 }
 
 .centered-list li {
-  font-size: 2rem; /* Adjust the font size as needed */
+  font-size: 2rem;
+  /* Adjust the font size as needed */
   text-align: center;
 }
 
@@ -265,7 +274,9 @@ form button:active, .details .likes button#like-btn:active {
   font-size: 3rem;
 }
 
-.success, .error, .info {
+.success,
+.error,
+.info {
   width: 100%;
   position: absolute;
   top: -1.2rem;
@@ -340,7 +351,8 @@ form button:active, .details .likes button#like-btn:active {
   background-color: #1c1b2c;
 }
 
-.nav-btn.visible, .mobile.visible {
+.nav-btn.visible,
+.mobile.visible {
   display: initial;
 }
 
@@ -354,13 +366,16 @@ form button:active, .details .likes button#like-btn:active {
   header img {
     width: 10rem;
   }
+
   main {
     flex-direction: column;
   }
+
   main .illustration,
   main .dashboard {
     width: 100%;
   }
+
   main .dashboard {
     justify-content: center;
   }
@@ -390,9 +405,11 @@ form button:active, .details .likes button#like-btn:active {
     flex-direction: column;
     justify-content: space-evenly;
   }
+
   .ques p#timer {
     font-size: 1.5rem;
   }
+
   .ques p#timer::before {
     content: "Time remaining: ";
     color: green;
