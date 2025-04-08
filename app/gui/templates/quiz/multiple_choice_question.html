@@ -13,14 +13,14 @@
         {% csrf_token %}
         {% for answer in answers %}
           <div class="answer">
-            <input class="answer-checkbox" type="checkbox" name="answer_responses_id" value="{{ answer.id }}" />
-            <label for="answer-label" style="font-size: 2rem">{{ answer.answer }}</label>
+            <input class="answer-checkbox" type="checkbox" name="answer_response_id" value="{{ answer.id }}" />
+            <label for="answer_response_id" style="font-size: 2rem">{{ answer.answer }}</label>
           </div>
         {% endfor %}
         {% if no_next_question %}
-          <button type="submit">Finish</button>
+          <button id="finish-button" type="submit">Finish</button>
         {% else %}
-          <button type="submit">Next Question</button>
+          <button id="next-question-button" type="submit">Next Question</button>
         {% endif %}
       </form>
     </div>

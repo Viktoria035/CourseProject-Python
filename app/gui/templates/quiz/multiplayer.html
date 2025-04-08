@@ -1,11 +1,14 @@
 <!-- filepath: d:\Projects\python\Project\app\gui\templates\quiz\multiplayer.html -->
 {% extends 'quiz/base.html' %}
+{% load static %}
+
 {% block content %}
   {% include 'quiz/header.html' %}
 
   <div class="card-columns" style="padding: 10px; margin: 20px;"></div>
 
-  <div class="rules">
+  <div id="game-container" room-code="{{ room_code }}" username="{{ username }}" quiz="{{ quiz }}" player="{{ player }}"></div>
+  <div id="rules-multiplayer" class="rules">
     <h1>Here are some of the rules for the multiplayer game:</h1>
     <ul>
       <h1>
@@ -20,84 +23,8 @@
     <h1>Click below to start the game.</h1>
   </div>
 
-  <div id="question-container" style="display: flex; justify-content: center;">
+  <div id="start-quiz-container" style="display: flex; justify-content: center;">
     <a href="#" id="start-quiz" style="font-size: 2.5rem;">Start Game</a>
   </div>
-  <div id="results-container"></div>
-
-  <script>
-    const room_code = '{{ room_code }}';
-    const username = '{{ username }}';
-    const player = '{{ player }}';
-    const quiz = '{{ quiz }}';
-
-    const quizSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/multiplayer/' + room_code + '/'
-    );
-
-    quizSocket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        console.log("Received data: ", data);
-
-        
-        if (data.type === "show_question") {
-            window.location.href = data.question.url;
-        }
-    };
-
-    document.getElementById("start-quiz").addEventListener("click", function(event) {
-        event.preventDefault();  // Предотвратява презареждане на страницата
-        
-        fetch(`/start_game/${room_code}/`, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken"),
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "username": username
-            })
-        })
-        .then(response => response.json())
-        .then(data => { console.log("Game started: ", data); });
-    });
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    function submitAnswer(answerId) {
-        fetch(`/submit_answer/${room_code}/`, {
-            method: "POST",
-            headers: { "X-CSRFToken": getCookie("csrftoken"), "Content-Type": "application/json" },
-            body: JSON.stringify({ "username": username, "answer_id": answerId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("✅ Answer submitted:", data);
-        });
-    }
-    
-    {% comment %} window.addEventListener('load', function(event) {
-        if (sessionStorage.getItem('websocket_reconnect') === 'true') {
-            const lastQuestion = sessionStorage.getItem('last_question_url');
-            if (lastQuestion) {
-                window.location.href = lastQuestion;
-            }
-            sessionStorage.removeItem('websocket_reconnect');
-            console.log("Reconnecting WebSocket after redirection...");
-        }
-    }); {% endcomment %}
-</script>
+  <script src="{% static 'quiz/js/multiplayer.js' %}"></script>
 {% endblock %}

@@ -13,14 +13,14 @@
         {% csrf_token %}
         {% for answer in answers %}
           <div class="answer">
-            <input class="answer-radio-button" type="radio" style="margin-bottom: 0; width: 10px;" name="answer" value="{{ answer.id }}" />
-            <label for="answer-label" style="font-size: 2rem; display: inline; margin-left: 5px;">{{ answer.answer }}</label>
+            <input class="answer-radio-button" type="radio" style="margin-bottom: 0; width: 10px;" name="answer_response_id" value="{{ answer.id }}" />
+            <label for="answer_response_id" style="font-size: 2rem; display: inline; margin-left: 5px;">{{ answer.answer }}</label>
           </div>
         {% endfor %}
         {% if no_next_question %}
-          <button type="submit">Finish</button>
+          <button id="finish-button" type="submit">Finish</button>
         {% else %}
-          <button type="submit">Next Question</button>
+          <button id="next-question-button" type="submit">Next Question</button>
         {% endif %}
       </form>
     </div>
