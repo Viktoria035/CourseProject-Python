@@ -21,6 +21,11 @@
     {% block content %}
 
     {% endblock %}
+    <div class="msgs" style="font-size: 2.5rem;">
+      {% for message in messages %}
+        <p class="{{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
     <script src="{% static 'quiz/js/scripts.js' %}"></script>
   </body>
 </html>

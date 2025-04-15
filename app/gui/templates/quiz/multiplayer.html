@@ -20,11 +20,12 @@
         <li>The player with the highest score at the end of the game will be declared the winner.</li>
       </h1>
     </ul>
-    <h1>Click below to start the game.</h1>
   </div>
 
   <div id="start-quiz-container" style="display: flex; justify-content: center;">
-    <a href="#" id="start-quiz" style="font-size: 2.5rem;">Start Game</a>
+    {% if is_creator %}
+      <a href="#" id="start-quiz" style="font-size: 3rem;">Start Game</a>
+    {% endif %}
   </div>
   <script src="{% static 'quiz/js/multiplayer.js' %}"></script>
 {% endblock %}

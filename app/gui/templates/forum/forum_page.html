@@ -9,10 +9,11 @@
   <div class="card-columns" style="padding: 10px; margin: 20px;"></div>
   <h2 class="jumbotron">
     Currently active forums: {{ count }}
-    <form method="POST" action="{% url 'add_in_forum' %}">
-      {% csrf_token %}
-      <button class="btn btn-success" style="width: fit-content; padding: 10px; margin: 20px;">Add forums</button>
-    </form>
+    <div>
+      <form method="GET" action="{% url 'add_in_forum' %}">
+        <button type="submit" class="btn btn-success" style="width: fit-content; padding: 10px; margin: 20px;">Add forum</button>
+      </form>
+    </div>
   </h2>
 
   {% for forum in forums %}
@@ -43,10 +44,11 @@
           {% endif %}
         {% endfor %}
       {% endfor %}
-      <form method="POST" action="{% url 'add_in_discussion' %}">
-        {% csrf_token %}
-        <button class="btn btn-success" style="width: fit-content; padding: 10px; margin:20px;">Add opinion</button>
-      </form>
+      <div>
+        <form method="GET" action="{% url 'add_in_discussion' %}">
+          <button type="submit" class="btn btn-success" style="width: fit-content; padding: 10px; margin: 20px;">Add opinion</button>
+        </form>
+      </div>
     </div>
     <br />
   {% endfor %}
