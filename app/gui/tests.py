@@ -1,6 +1,6 @@
 from django.test import TestCase
 from .models import Player, PointsPerDay
-from app.functions import get_player_rank_in_leaderboard, change_player_level_by_score
+from .services import get_player_rank_in_leaderboard, change_player_level_by_score
 from django.contrib.auth.models import User
 # Create your tests here.
 

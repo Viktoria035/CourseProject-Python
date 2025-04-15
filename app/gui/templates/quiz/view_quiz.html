@@ -32,6 +32,15 @@
         <h3>Join a game</h3>
         <input type="input" name="join-room-code" placeholder="Game Room Name" />
         <input type="submit" name="join-room" value="Join room" />
+        <br />
+        <h3>Or choose from active games</h3>
+        <select name="join-room-code" id="active-rooms">
+          <option value="" disabled selected>Select a room</option>
+          {% for room in active_rooms %}
+            <option value="{{ room.room_code }}">{{ room.room_code }}</option>
+          {% endfor %}
+        </select>
+        <input type="submit" name="join-active-room" value="Join selected room" />
       </div>
     </form>
   </main>

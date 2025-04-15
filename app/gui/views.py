@@ -2,17 +2,15 @@ from django.http.response import HttpResponse as HttpResponse
 from django.http import Http404
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from app.functions import change_player_level_by_score, get_player_rank_in_leaderboard, get_plot_for_per_player_since_registration, get_plot_for_each_quiz_score
-from .models import Player, Quiz, Category, Question, Answer, QuestionResponse, QuizAttempt, Forum, Discussion, PointsPerDay, QUESTION_TYPES, MultiPlayerSession
+from .services import *
+from .models import Player, Quiz, Category, Question, Answer, QuizAttempt, Forum, Discussion, PointsPerDay, MultiPlayerSession
 from django.db import IntegrityError
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .forms import CategoryForm, QuizForm, QuestionForm, AnswerForm, CreateInForumForm, CreateInDiscussionForm
 from datetime import date
-from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
-from channels.layers import get_channel_layer
 
 
 def index(request):
@@ -59,27 +57,6 @@ def register(request):
     if request.user.is_authenticated:
         return redirect('home')
     return render(request, 'registration/register.html')
-
-# def password_reset(request):
-#     """Password reset page."""
-
-#     if request.method == 'POST':
-#         email = request.POST.get('email')
-#         user = User.objects.filter(email=email).first()
-#         if user is not None:
-#             password = request.POST.get('password')
-#             password_c = request.POST.get('password-c')
-#             if password == password_c:
-#                 user.set_password(request.POST.get('password'))
-#                 user.save()
-#                 messages.success(request, 'Password reset successfully')
-#                 return redirect('login')
-#             else:
-#                 messages.error(request, "Password doesn't match Confirm Password")
-#                 return render(request, 'registration/password_reset.html')
-#         messages.error(request, 'Email not found')
-
-#     return render(request, 'registration/password_reset.html')
 
 @login_required(login_url='/login')
 def rules(request):
@@ -143,63 +120,23 @@ def view_quiz(request, quiz_id):
 
     quiz = Quiz.objects.filter(id=quiz_id).first()
     player = Player.objects.get(user=request.user)
+    active_rooms = MultiPlayerSession.objects.filter(quiz=quiz, active=True).all()
 
     if quiz is None:
         messages.error(request, 'Quiz does not exists.')
         return redirect('not_found')
     
-    if request.method == 'POST' and request.POST.get('start-quiz'):
-        question = Question.objects.filter(quiz=quiz).first()
-        if question is None:
-            messages.warning(request, 'No questions available for this quiz!')
-            return redirect('not_found')
-
-        quiz_attempt = QuizAttempt(quiz=quiz)
-        quiz_attempt.save()
-        player.active_attempt = quiz_attempt
-        player.save()
-        
-        if question.question_type == 'single choice':
-            return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=question.id)
-        elif question.question_type == 'multiple choice':
-            return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=question.id)
-    elif request.method == 'POST' and request.POST.get('create-room'):
-        room_code = request.POST.get('create-room-code')
-        if room_code == '':
-            messages.error(request, 'You have to enter a room code to join!')
-            return redirect('view_quiz', quiz_id=quiz_id)
-        if MultiPlayerSession.objects.filter(room_code=room_code).exists():
-            messages.error(request, 'Room code already exists! Please enter a different one.')
-            return redirect('view_quiz', quiz_id=quiz_id)
-        if MultiPlayerSession.objects.filter(creator=player).exists():
-            messages.error(request, 'You already created a room!')
-            return redirect('view_quiz', quiz_id=quiz_id)
-        first_question = Question.objects.filter(quiz=quiz).first()
-        multiplayer = MultiPlayerSession(room_code=room_code, quiz=quiz, creator=player, current_question=first_question)
-        multiplayer.save()
-        return redirect('multiplayer', room_code=multiplayer.room_code)
-    elif request.method == 'POST' and request.POST.get('join-room'):
-        room_code = request.POST.get('join-room-code')
-        if room_code == '':
-            messages.error(request, 'You have to enter a room code to join!')
-            return redirect('view_quiz', quiz_id=quiz_id)
-        multiplayer = MultiPlayerSession.objects.filter(room_code=room_code).first()
-        if multiplayer is None:
-            messages.warning(request, 'Room does not exist!')
-            return redirect('not_found')
-        if player in multiplayer.players.all():
-            messages.warning(request, 'You are already in the room!')
-            return redirect('not_found')
-        elif multiplayer.players.count() == 5:
-            messages.warning(request, 'Room is full! Please enter another one.')
-            return redirect(view_quiz, quiz_id=quiz_id)
-        elif multiplayer.started == False:
-            messages.warning(request, 'Room is correct, but not started yet! Please try again after a few seconds.')
-            return redirect(view_quiz, quiz_id=quiz_id)
-        return redirect('multiplayer', room_code=multiplayer.room_code)
+    if request.method == 'POST':
+        if request.POST.get('start-quiz'):
+            return start_quiz(request, quiz=quiz, player=player)
+        elif request.POST.get('create-room'):
+            return create_room(request, quiz=quiz, player=player)
+        elif request.POST.get('join-room') or request.POST.get('join-active-room'):
+            return join_room(request, quiz=quiz, player=player)
 
     context = {
-        'quiz': quiz
+        'quiz': quiz,
+        'active_rooms': active_rooms
     }
     return render(request, 'quiz/view_quiz.html', context=context)
 
@@ -218,47 +155,16 @@ def view_single_choice_question(request, quiz_id, question_id):
     next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
     
     if request.method == 'POST':
-        answer_response_id = request.POST.get('answer_response_id')
-        if answer_response_id is None:
-            messages.warning(request, 'You have to answer the question to proceed!')
-            return redirect(request.path)
-        answer = Answer.objects.filter(question=question, id=answer_response_id).first()
-        player = Player.objects.get(user=request.user)
-        question_response = QuestionResponse(
-            player=player,
-            quiz=quiz,
-            question=question,
-            answer=answer,
-        )
-
-        """If the player has already answered the quiz, he can not return to the previous question. So we redirect him to the quiz page."""
-        if player.active_attempt is None:
-            messages.error(request, 'You can not return when you have already answer the quiz. Please, start new quiz.')
-            return redirect('view_quiz', quiz_id=quiz_id)
-        
-        question_response.save()
-        player.active_attempt.responses.add(question_response)
-        
-        if answer.is_correct:
-            player.active_attempt.score += answer.points
-            player.active_attempt.save()
-
-        if next_question is None:
-            return redirect('results', quiz_id=quiz_id)
-        
-        if next_question.question_type == 'single choice':
-            return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=next_question.id)
-        elif next_question.question_type == 'multiple choice':
-            return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=next_question.id)
-    else:
-        answers = Answer.objects.filter(question=question).all()
-        context = {
-            'quiz': quiz, 
-            'question': question,
-            'no_next_question': next_question is None,
-            'answers': answers
-        }
-        return render(request, 'quiz/single_choice_question.html', context=context)
+        return single_choice_answer(request, quiz=quiz, question=question, next_question=next_question)
+    
+    answers = Answer.objects.filter(question=question).all()
+    context = {
+        'quiz': quiz, 
+        'question': question,
+        'no_next_question': next_question is None,
+        'answers': answers
+    }
+    return render(request, 'quiz/single_choice_question.html', context=context)
 
 @login_required(login_url='/login')
 def view_multiple_choice_question(request, quiz_id, question_id):
@@ -274,48 +180,16 @@ def view_multiple_choice_question(request, quiz_id, question_id):
     next_question = Question.objects.filter(quiz=quiz, id__gt=question.id).first()
     
     if request.method == 'POST':
-        answer_responses_id = request.POST.getlist('answer_response_id')
-        if len(answer_responses_id) == 0:
-            messages.warning(request, 'You have to answer the question to proceed!')
-            return redirect(request.path)
-        answers = [Answer.objects.filter(question=question, id=answer_response_id).first() for answer_response_id in answer_responses_id]
-        player = Player.objects.get(user=request.user)
-        for answer in answers:
-            question_response = QuestionResponse(
-                player=player,
-                quiz=quiz,
-                question=question,
-                answer=answer,
-            )
-            
-            """If the player has already answered the quiz, he can not return to the previous question. So we redirect him to the quiz page."""
-            if player.active_attempt is None:
-                messages.error(request, 'You can not return when you have already answer the quiz. Please, start new quiz.')
-                return redirect('view_quiz', quiz_id=quiz_id)
-            
-            question_response.save()
-            player.active_attempt.responses.add(question_response)
-            
-            if answer.is_correct:
-                player.active_attempt.score += answer.points
-                player.active_attempt.save()
-
-        if next_question is None:
-            return redirect('results', quiz_id=quiz_id)
+        return multiple_choice_answer(request, quiz=quiz, question=question, next_question=next_question)
         
-        if next_question.question_type == QUESTION_TYPES[0][0]:
-            return redirect('view_single_choice_question', quiz_id=quiz_id, question_id=next_question.id)
-        elif next_question.question_type == QUESTION_TYPES[1][0]:
-            return redirect('view_multiple_choice_question', quiz_id=quiz_id, question_id=next_question.id)
-    else:
-        answers = Answer.objects.filter(question=question).all()
-        context = {
-            'quiz': quiz, 
-            'question': question,
-            'no_next_question': next_question is None,
-            'answers': answers
-        }
-        return render(request, 'quiz/multiple_choice_question.html', context=context)
+    answers = Answer.objects.filter(question=question).all()
+    context = {
+        'quiz': quiz, 
+        'question': question,
+        'no_next_question': next_question is None,
+        'answers': answers
+    }
+    return render(request, 'quiz/multiple_choice_question.html', context=context)
 
 @login_required(login_url='/login')
 def results(request, quiz_id):
@@ -334,30 +208,18 @@ def results(request, quiz_id):
     if not questions.exists():
         return redirect('not_found')
     
+    question_results = []
+    for question in questions:
+        question_results.append(get_question_data_results(question, player, quiz))
+    
     context = {
         'quiz': quiz,
         'quiz_attempt': player.active_attempt,
-        'questions': [
-            {
-                'question': question,
-                'answers': [answer for answer in Answer.objects.filter(question=question).all()],
-                'user_answers': player.active_attempt.responses.filter(
-                    quiz=quiz,
-                    player=player,
-                    question=question                
-                ).all(),
-                'right_answers': Answer.objects.filter(question=question, is_correct=True).all()
-            }
-            for question in questions
-        ]
+        'questions': question_results
     }
-    
-    player.score += player.active_attempt.score
-    points_today = PointsPerDay.objects.get_or_create(player=player, date=date.today())[0]
-    points_today.points += player.active_attempt.score
-    points_today.save()
-    player.active_attempt = None
-    player.save()
+
+    calculate_points_after_quiz(player=player)
+
     return render(request, 'quiz/result.html', context=context)
 
 @login_required(login_url='/login')
@@ -374,6 +236,7 @@ def view_statistics_for_per_player(request):
         player = Player.objects.get(user=request.user)
     except Player.DoesNotExist:
         raise Http404("Player does not exist")
+    
     points_per_days = PointsPerDay.objects.filter(player=player)
     days = [points_per_day.date for points_per_day in points_per_days]
     points = [points_per_day.points for points_per_day in points_per_days]
@@ -417,15 +280,8 @@ def create_category(request):
     form = CategoryForm()
     if request.method == 'POST':
         form = CategoryForm(request.POST)
-        if form.is_valid():
-            category = form.save(commit=False)
-            category.player = Player.objects.get(user=request.user)
-            category.save()
-            messages.success(request, 'Category was successfully created. Continue with adding quiz/es')
-            return redirect(request.path)
-        else:
-            messages.warning(request, 'Invalid form!')
-            return redirect(request.path)
+        # check_if_form_is_valid_and_set_creator
+        return check_if_form_is_valid_with_player(request, form=form, message='Category was successfully created. Continue with adding quiz/es', redirect_success_url='create_quiz')
         
     context = {
         'form': form
@@ -439,18 +295,8 @@ def create_quiz(request):
     form = QuizForm()
     if request.method == 'POST':
         form = QuizForm(request.POST)
-        if form.is_valid():
-            quiz = form.save(commit=False)
-            try:
-                quiz.player = Player.objects.get(user=request.user)
-            except Player.DoesNotExist:
-                raise Http404("Player does not exist")
-            quiz.save()
-            messages.success(request, 'Quiz was successfully added. Continue with adding question/s!')
-            return redirect(request.path)
-        else:
-            messages.warning(request, 'Invalid form!')
-            return redirect(request.path)
+        return check_if_form_is_valid_with_player(request, form=form, message='Quiz was successfully added. Continue with adding question/s!', redirect_success_url='create_question')
+
     context = {
         'form': form
     }
@@ -462,25 +308,10 @@ def create_question(request):
 
     form = QuestionForm()
     if request.method == 'POST':
+        form = QuestionForm(request.POST)
         quiz = Quiz.objects.get(id=request.POST.get('quiz'))
-        question = request.POST.get('question')
-        question_type = request.POST.get('question_type')
-        player = Player.objects.get(user=request.user)
-        if quiz.player != player:
-            messages.error(request, 'You are not authorized to add question to this quiz!')
-            return redirect('create_question')
-        form = QuestionForm({
-            'quiz': quiz,
-            'question': question,
-            'question_type': question_type
-        })
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Question/s was/were successfully added. Continue with adding answer/s!')
-            return redirect(request.path)
-        else:
-            messages.warning(request, 'Invalid form!')
-            return redirect(request.path)
+        return check_form_for_correct_user(request, form=form, current_user=quiz.player, message='Question/s was/were successfully added. Continue with adding answer/s!', redirect_success_url='create_answer')
+        
     context = {
         'form': form
     }
@@ -492,27 +323,10 @@ def create_answer(request):
 
     form = AnswerForm()
     if request.method == 'POST':
+        form = AnswerForm(request.POST)
         question = Question.objects.get(id=request.POST.get('question'))
-        answer = request.POST.get('answer')
-        points = request.POST.get('points')
-        is_correct = request.POST.get('is_correct')
-        player = Player.objects.get(user=request.user)
-        if question.quiz.player != player:
-            messages.error(request, 'You are not authorized to add answer to this question!')
-            return redirect('create_answer')
-        form = AnswerForm({
-            'question': question,
-            'answer': answer,
-            'points': points,
-            'is_correct': is_correct
-        })
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Answer/s was/were successfully added.')
-            return redirect(request.path)
-        else:
-            messages.warning(request, 'Invalid form!')
-            return redirect(request.path)
+        return check_form_for_correct_user(request, form=form, current_user=question.quiz.player, message='Answer/s was/were successfully added.', redirect_success_url='create')
+        
     context = {
         'form': form
     }
@@ -547,13 +361,10 @@ def delete_forum_page(request, forum_id):
     except Forum.DoesNotExist:
         messages.error(request, 'Forum does not exist!')
         return redirect('forum_page')
+    
     if request.method == 'GET':
-        if player == forum.player:
-            forum.is_deleted = True
-            forum.save()
-            messages.success(request, 'Forum deleted successfully!')
-        else:
-            messages.error(request, 'You are not authorized to delete this category!')
+        delete_element(request, player=player, element=forum, message='Forum deleted successfully!')
+
     return redirect('forum_page')
 
 @login_required(login_url='/login')
@@ -563,12 +374,8 @@ def add_in_forum(request):
     form = CreateInForumForm()
     if request.method == 'POST':
         form = CreateInForumForm(request.POST)
-        if form.is_valid():
-            forum = form.save(commit=False)
-            forum.player = Player.objects.get(user=request.user)
-            forum.save()
-            messages.success(request, 'Forum was successfully added.')
-            return redirect(request.path)
+        return check_if_form_is_valid_with_player(request, form=form, message='Forum was successfully added.', redirect_success_url='forum_page')
+    
     context = {
         'form': form
     }
@@ -581,15 +388,9 @@ def add_in_discussion(request):
     form = CreateInDiscussionForm()
     if request.method == 'POST':
         form = CreateInDiscussionForm(request.POST)
-        if form.is_valid():
-            forum = form.cleaned_data['forum'] # we are retrieving the cleaned value for the 'forum' field from the submitted form data
-            if not forum.is_deleted:
-                form.save()
-                messages.success(request, 'Discussion was successfully added.')
-                return redirect(request.path)
-            else:
-                messages.error(request, 'Cannot add discussion to a deleted forum!')
-                return redirect('add_in_discussion')
+        #виж
+        return forum_disscussion_check(request, form=form, message='Discussion was successfully added.', redirect_success_url='forum_page')
+
     context = {
         'form': form
     }
@@ -609,24 +410,76 @@ def edit_quiz(request, quiz_id, category):
         return redirect('not_found')
     
     player = Player.objects.get(user=request.user)
+    
     quiz = Quiz.objects.get(id=quiz_id)
-
+    # виж какво можеш да ги направиш
     if player != quiz.player:
         messages.error(request, 'You are not authorized to edit this quiz!')
         return redirect('quizzes_by_category', category=category)
+
+    if request.method == "GET":
+        return edit_quiz_form(request, quiz=quiz)
+    
+    if request.method == "POST":
+        return edit_quiz_submission(request, quiz=quiz, category=category)
+    
+@login_required(login_url='/login')
+def edit_question(request, question_id):
+    """Edit question page."""
+    
+    try:
+        question = Question.objects.get(id=question_id)
+    except Question.DoesNotExist:
+        messages.error(request, 'Question does not exist!')
+        return redirect('not_found')
+    
+    player = Player.objects.get(user=request.user)
+
+    if player != question.quiz.player:
+        messages.error(request, 'You are not authorized to edit this question!')
+        return redirect('quizzes_by_category', category=question.quiz.category.category)
+
+    if request.method == "GET":
+        return edit_question_form(request, question=question)
+    
+    if request.method == "POST":
+        return edit_question_submission(request, question=question)
+        
+@login_required(login_url='/login')
+def edit_answer(request, answer_id):
+    """Edit answer page."""
+
+    try:
+        answer = Answer.objects.get(id=answer_id)
+    except Answer.DoesNotExist:
+        messages.error(request, 'Answer does not exist!')
+        return redirect('not_found')
+    
+    player = Player.objects.get(user=request.user)
+    if player != answer.question.quiz.player:
+        messages.error(request, 'You are not authorized to edit this answer!')
+        return redirect('quizzes_by_category', category=answer.question.quiz.category.category)
     
     if request.method == "GET":
-        form = QuizForm(instance=quiz)
-        return render(request, 'create/edit_quiz.html', {'form': form})
+        return edit_answer_form(request, answer=answer)
+    
     if request.method == "POST":
-        form = QuizForm(request.POST, instance=quiz)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Quiz updated successfully!')
-            return redirect('quizzes_by_category', category=category)
-        else:
-            messages.error(request, 'Invalid form!')
-            return redirect('edit_quiz', quiz_id=quiz_id, category=category)
+        return edit_answer_submission(request, answer=answer)
+        
+@login_required(login_url='/login')
+def show_all_quizzes_for_player(request):
+    """Show all created quizzes from the user."""
+
+    try:
+        player = Player.objects.get(user=request.user)
+    except Player.DoesNotExist:
+        raise Http404("Player does not exist")
+    quizzes = Quiz.quizzes_for_player(player_instance=player)
+
+    context = {
+        'quizzes': quizzes
+    }
+    return render(request, 'create/show_all_quizzes_for_player.html', context=context)
 
 @login_required(login_url='/login')
 def show_all_questions_for_player(request):
@@ -637,34 +490,11 @@ def show_all_questions_for_player(request):
     except Player.DoesNotExist:
         raise Http404("Player does not exist")
     questions = Question.questions_for_player_in_quiz(player_instance=player)
+
     context = {
         'questions': questions
     }
     return render(request, 'create/show_all_questions_for_player.html', context=context)
-    
-
-@login_required(login_url='/login')
-def edit_question(request, question_id):
-    """Edit question page."""
-    
-    try:
-        question = Question.objects.get(id=question_id)
-    except Question.DoesNotExist:
-        messages.error(request, 'Question does not exist!')
-        return redirect('not_found')
-
-    if request.method == "GET":
-        form = QuestionForm(instance=question)
-        return render(request, 'create/edit_question.html', {'form': form})
-    if request.method == "POST":
-        form = QuestionForm(request.POST, instance=question)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Question updated successfully!')
-            return redirect('show_all_questions_for_player')
-        else:
-            messages.error(request, 'Invalid form!')
-            return redirect('edit_question', question_id=question_id)
 
 @login_required(login_url='/login')
 def show_all_answers_for_player(request):
@@ -681,29 +511,6 @@ def show_all_answers_for_player(request):
     return render(request, 'create/show_all_answers_for_player.html', context=context)
 
 @login_required(login_url='/login')
-def edit_answer(request, answer_id):
-    """Edit answer page."""
-
-    try:
-        answer = Answer.objects.get(id=answer_id)
-    except Answer.DoesNotExist:
-        messages.error(request, 'Answer does not exist!')
-        return redirect('not_found')
-    
-    if request.method == "GET":
-        form = AnswerForm(instance=answer)
-        return render(request, 'create/edit_answer.html', {'form': form})
-    if request.method == "POST":
-        form = AnswerForm(request.POST, instance=answer)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Answer updated successfully!')
-            return redirect('show_all_answers_for_player')
-        else:
-            messages.error(request, 'Invalid form!')
-            return redirect('edit_answer', answer_id=answer_id)
-
-@login_required(login_url='/login')
 def delete_category(request, category_id):
     """Delete category page."""
 
@@ -717,13 +524,9 @@ def delete_category(request, category_id):
         return redirect('not_found')
     
     if request.method == 'GET':
-        if player == category.player:
-            category.is_deleted = True
-            category.save()
-            messages.success(request, 'Category deleted successfully!')
-        else:
-            messages.error(request, 'You are not authorized to delete this category!')
-        return redirect('quiz_categories')
+        delete_element(request, player=player, element=category, message='Category deleted successfully!')
+
+    return redirect('quiz_categories')
 
 @login_required(login_url='/login')
 def view_multiplayer(request, room_code):
@@ -732,14 +535,14 @@ def view_multiplayer(request, room_code):
     multiplayer = MultiPlayerSession.objects.get(room_code=room_code)
     username = player.user.username
     quiz = multiplayer.quiz
-    question = Question.objects.filter(quiz=quiz).first()
+    is_creator = multiplayer.creator == player
 
     context = {
         'room_code' : room_code, 
         'username' : username,
         'player' : player,
         'quiz' : quiz,
-        'question' : question
+        'is_creator': is_creator
         }
     return render(request, 'quiz/multiplayer.html' , context)
     

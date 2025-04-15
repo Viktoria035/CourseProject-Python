@@ -4,18 +4,18 @@ from django.utils.translation import gettext as _
 from django.core.validators import MaxValueValidator
 import re
 from datetime import date
+from enum import Enum
+
 # Create your models here.
 
-DIFF_CHOICES = (
-    ('easy', 'Easy'),
-    ('medium', 'Medium'),
-    ('hard', 'Hard'),
-)
+class Difficulty(Enum):
+    EASY = 'easy'
+    MEDIUM = 'medium'
+    HARD = 'hard'
 
-QUESTION_TYPES = (
-    ('single choice', 'Single Choice'),
-    ('multiple choice', 'Multiple Choice'),
-)
+class QuestionType(Enum):
+    SINGLE_CHOICE = 'single choice'
+    MULTIPLE_CHOICE = 'multiple choice'
 
 class Player(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_("User"))
@@ -51,19 +51,23 @@ class Category(models.Model):
 class Quiz(models.Model):
 
     title = models.CharField(max_length=100, blank=False, verbose_name=_("Title"))
-
     description = models.TextField(blank=True, help_text=_("A brief description of the quiz"), verbose_name=_("Description"))
-
-    difficulty = models.CharField(max_length=6, choices=DIFF_CHOICES, default='easy', verbose_name=_("Difficulty"))
-
+    difficulty = models.CharField(
+        max_length=10, 
+        choices=[(tag.value, tag.name.replace('_', ' ').title()) for tag in Difficulty], 
+        default=Difficulty.EASY.value, 
+        verbose_name=_("Difficulty")
+    )
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("Category"))
-    
     player = models.ForeignKey(Player,on_delete=models.CASCADE, help_text=_("The player who created the quiz."), verbose_name=_("Player"), null=True)
-
     max_questions = models.PositiveIntegerField(blank=True, null=True, help_text=_("Number of questions to be answered on each attempt"), verbose_name=_("Max Questions"))
-
-    pass_mark = models.SmallIntegerField(blank=True, default=0, help_text=_("Percentage required to pass. Leave empty if no pass mark is required"), 
-                                         validators=[MaxValueValidator(100)], verbose_name=_("Pass Mark"))
+    pass_mark = models.SmallIntegerField(
+        blank=True, 
+        default=0, 
+        help_text=_("Percentage required to pass. Leave empty if no pass mark is required"),
+        validators=[MaxValueValidator(100)], 
+        verbose_name=_("Pass Mark")
+    )
 
 
     class Meta:
@@ -75,13 +79,22 @@ class Quiz(models.Model):
 
     def get_questions(self):
         return self.question_set.all()[:self.max_questions] # we use the max_questions to limit the number of questions to be displayed
+    
+    @staticmethod
+    def quizzes_for_player(player_instance):
+        return list(Quiz.objects.filter(player=player_instance, category__is_deleted=False))
 
 
 class Question(models.Model):
     question = models.CharField(max_length=200, verbose_name=_("Question"))
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name=_("Quiz"))
     created = models.DateTimeField(auto_now_add=True)
-    question_type = models.CharField(max_length=15, choices=QUESTION_TYPES, default='single choice', verbose_name=_("Question Type"))
+    question_type = models.CharField(
+        max_length=15, 
+        choices=[(tag.value, tag.name.replace('_', ' ').title()) for tag in QuestionType], 
+        default=QuestionType.SINGLE_CHOICE.value, 
+        verbose_name=_("Question Type")
+    )
 
     def __str__(self):
         return self.question
@@ -168,5 +181,6 @@ class MultiPlayerSession(models.Model):
     creator = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='creator', verbose_name=_("Creator"), null=True)
     players = models.ManyToManyField(Player, related_name='game_players', verbose_name=_("Players"))
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name=_("Quiz"))
+    active = models.BooleanField(default=True, verbose_name=_("Active"))
     started = models.BooleanField(default=False, verbose_name=_("Started"))
     current_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("Current Question"))
