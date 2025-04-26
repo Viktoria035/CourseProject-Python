@@ -153,6 +153,6 @@ LOGOUT_REDIRECT_URL = '/login'
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
 # The value is in seconds. It is the number of seconds that a session will last. In this case, it is 7 days.
-SESSION_SAVE_EVERY_REQUEST = True
+#SESSION_SAVE_EVERY_REQUEST = True
 # This setting is used to determine whether to save the session data on every request.
 # If this is set to True, the session data will be saved on every request.
